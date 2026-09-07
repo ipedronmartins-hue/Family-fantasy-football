@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+:root {
+  /* Chalk white -- the paper a matchday lineup sheet gets printed on */
+  --color-bg: #faf9f5;
+  /* Warm near-black, tinted toward green rather than neutral #111 */
+  --color-ink: #1b211c;
+  /* Deep pitch grass */
+  --color-pitch: #2f5233;
+  --color-pitch-dark: #1f3823;
+  /* Floodlight amber -- used sparingly, for the one or two things a parent must act on */
+  --color-amber: #e8a33d;
+  /* Chalk pitch-marking grey, used for hairlines */
+  --color-line: #dcdfd6;
+}
+
+@theme inline {
+  --color-bg: var(--color-bg);
+  --color-ink: var(--color-ink);
+  --color-pitch: var(--color-pitch);
+  --color-pitch-dark: var(--color-pitch-dark);
+  --color-amber: var(--color-amber);
+  --color-line: var(--color-line);
+  --font-display: var(--font-oswald);
+  --font-sans: var(--font-work-sans);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+}
