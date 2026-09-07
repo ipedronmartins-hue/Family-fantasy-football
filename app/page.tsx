@@ -8,7 +8,7 @@ export default function InicioPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col pb-20">
-      <header className="bg-pitch px-5 pb-6 pt-8 text-white">
+      <header className="bg-blue px-5 pb-6 pt-8 text-white">
         <p className="text-sm text-white/70">Gondomar SC · Sub-13 · Futebol de 11</p>
         <h1 className="mt-1 font-display text-3xl font-semibold">Época 2026/27</h1>
         <p className="mt-2 text-sm text-white/80">{fixtures[0].competition}</p>
@@ -23,9 +23,11 @@ export default function InicioPage() {
         </div>
 
         <div className="rounded-2xl border border-line bg-white p-4">
-          <p className="text-xs font-semibold text-ink/60">A TUA FANTASY · exemplo</p>
-          <p className="mt-1 font-display text-4xl font-bold text-pitch">187 pts</p>
-          <p className="mt-1 text-sm text-ink/60">Os Pais do Craque · 7.º lugar</p>
+          <p className="text-xs font-semibold text-ink/60">A TUA FANTASY</p>
+          <p className="mt-2 text-sm text-ink/60">
+            Ainda sem conta ligada — a tua equipa Fantasy aparece aqui assim que os pais
+            puderem entrar.
+          </p>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -41,7 +43,7 @@ export default function InicioPage() {
 
         <Link
           href="/plantel"
-          className="block rounded-2xl border border-line bg-white p-4 text-center text-sm font-semibold text-pitch"
+          className="block rounded-2xl border border-line bg-white p-4 text-center text-sm font-semibold text-blue"
         >
           Ver plantel completo →
         </Link>

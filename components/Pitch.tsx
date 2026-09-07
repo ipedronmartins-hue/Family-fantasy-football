@@ -32,7 +32,7 @@ export function Pitch({
             className="absolute w-16 -translate-x-1/2 translate-y-1/2 text-center"
             style={{ left: `${slot.left}%`, bottom: `${slot.bottom}%` }}
           >
-            <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-full border-2 border-amber bg-white font-display text-xs font-semibold text-pitch">
+            <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-full border-2 border-gold bg-white font-display text-xs font-semibold text-blue">
               {player.number}
             </span>
             <span className="mt-1 block truncate rounded bg-ink/80 px-1 py-0.5 text-[10px] font-medium text-white">

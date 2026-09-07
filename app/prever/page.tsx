@@ -13,7 +13,7 @@ export default async function PreverPage({
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col pb-20">
-      <header className="bg-pitch px-5 pb-6 pt-8 text-white">
+      <header className="bg-blue px-5 pb-6 pt-8 text-white">
         <p className="text-sm text-white/70">Previsão · {match.id.replace("J", "Jornada ")}</p>
         <h1 className="mt-1 font-display text-2xl font-semibold">
           {match.home ? "Gondomar SC" : match.opponent} vs{" "}

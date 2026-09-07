@@ -25,7 +25,7 @@ export default function JogosPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col pb-20">
-      <header className="bg-pitch px-5 pb-6 pt-8 text-white">
+      <header className="bg-blue px-5 pb-6 pt-8 text-white">
         <p className="text-sm text-white/70">Gondomar SC · Sub-13 · 2026/27</p>
         <h1 className="mt-1 font-display text-3xl font-semibold">Calendário</h1>
         <p className="mt-2 text-sm text-white/80">
@@ -41,7 +41,7 @@ export default function JogosPage() {
               onClick={() => setFilter(f.id)}
               className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold ${
                 filter === f.id
-                  ? "border-pitch bg-pitch text-white"
+                  ? "border-blue bg-blue text-white"
                   : "border-line bg-white text-ink/70"
               }`}
             >

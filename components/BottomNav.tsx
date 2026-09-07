@@ -24,7 +24,7 @@ export function BottomNav() {
               key={tab.href}
               href={tab.href}
               className={`flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium ${
-                active ? "text-pitch" : "text-ink/50"
+                active ? "text-blue" : "text-ink/50"
               }`}
             >
               <span className="text-lg leading-none">{tab.icon}</span>

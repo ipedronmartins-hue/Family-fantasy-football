@@ -6,8 +6,8 @@ import { Match } from "@/types/match";
 
 export function PredictionForm({ match, players }: { match: Match; players: Player[] }) {
   const [outcome, setOutcome] = useState<"home" | "draw" | "away">("home");
-  const [goalsHome, setGoalsHome] = useState("2");
-  const [goalsAway, setGoalsAway] = useState("1");
+  const [goalsHome, setGoalsHome] = useState("");
+  const [goalsAway, setGoalsAway] = useState("");
   const [scorer, setScorer] = useState("");
   const [assist, setAssist] = useState("");
   const [mvp, setMvp] = useState("");
@@ -26,7 +26,7 @@ export function PredictionForm({ match, players }: { match: Match; players: Play
             key={key}
             onClick={() => setOutcome(key)}
             className={`flex-1 rounded-full border px-2 py-2 text-xs font-semibold ${
-              outcome === key ? "border-pitch bg-pitch text-white" : "border-line text-ink/70"
+              outcome === key ? "border-blue bg-blue text-white" : "border-line text-ink/70"
             }`}
           >
             {key === "home" ? homeLabel : key === "draw" ? "Empate" : awayLabel}
@@ -40,6 +40,7 @@ export function PredictionForm({ match, players }: { match: Match; players: Play
           value={goalsHome}
           onChange={(e) => setGoalsHome(e.target.value)}
           inputMode="numeric"
+          placeholder="0"
           className="w-16 rounded-xl border border-line px-3 py-2 text-center"
         />
         <span className="text-ink/50">—</span>
@@ -47,6 +48,7 @@ export function PredictionForm({ match, players }: { match: Match; players: Play
           value={goalsAway}
           onChange={(e) => setGoalsAway(e.target.value)}
           inputMode="numeric"
+          placeholder="0"
           className="w-16 rounded-xl border border-line px-3 py-2 text-center"
         />
       </div>
@@ -95,12 +97,12 @@ export function PredictionForm({ match, players }: { match: Match; players: Play
 
       <button
         onClick={() => setSaved(true)}
-        className="w-full rounded-xl bg-pitch py-3 text-sm font-semibold text-white"
+        className="w-full rounded-xl bg-blue py-3 text-sm font-semibold text-white"
       >
         Confirmar previsão
       </button>
       {saved && (
-        <p className="mt-3 text-center text-xs text-pitch">
+        <p className="mt-3 text-center text-xs text-blue">
           Previsão registada nesta sessão — a gravação definitiva chega com as contas dos pais.
         </p>
       )}

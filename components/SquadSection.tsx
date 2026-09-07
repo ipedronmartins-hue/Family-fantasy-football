@@ -10,7 +10,7 @@ export function SquadSection({
 }) {
   return (
     <section className="mb-7">
-      <h2 className="mb-2 border-l-4 border-pitch pl-3 font-display text-lg font-semibold text-ink">
+      <h2 className="mb-2 border-l-4 border-blue pl-3 font-display text-lg font-semibold text-ink">
         {POSITION_GROUP_LABELS[group]}
       </h2>
       <ul className="rounded-2xl border border-line bg-white px-4">

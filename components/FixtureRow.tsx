@@ -5,7 +5,11 @@ import { formatMatchDate } from "@/lib/format";
 export function FixtureRow({ match }: { match: Match }) {
   return (
     <div className="flex items-center gap-3 border-b border-line py-3 last:border-b-0">
-      <span className="shrink-0 rounded-lg bg-amber/20 px-2.5 py-2 text-xs font-semibold text-ink">
+      <span
+        className={`shrink-0 rounded-lg px-2.5 py-2 text-xs font-semibold ${
+          match.featured ? "bg-red/10 text-red" : "bg-gold/20 text-ink"
+        }`}
+      >
         {match.matchday}
       </span>
       <div className="min-w-0 flex-1">
@@ -20,7 +24,7 @@ export function FixtureRow({ match }: { match: Match }) {
       </div>
       <Link
         href={`/prever?jornada=${match.id}`}
-        className="shrink-0 rounded-lg bg-pitch/10 px-3 py-2 text-xs font-semibold text-pitch"
+        className="shrink-0 rounded-lg bg-blue/10 px-3 py-2 text-xs font-semibold text-blue"
       >
         Prever
       </Link>

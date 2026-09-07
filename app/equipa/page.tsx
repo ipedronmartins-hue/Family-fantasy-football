@@ -20,8 +20,8 @@ export default function EquipaPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col pb-20">
-      <header className="bg-pitch px-5 pb-6 pt-8 text-white">
-        <p className="text-sm text-white/70">Os Pais do Craque · pré-visualização</p>
+      <header className="bg-blue px-5 pb-6 pt-8 text-white">
+        <p className="text-sm text-white/70">Gondomar SC · Sub-13</p>
         <h1 className="mt-1 font-display text-3xl font-semibold">A Minha Equipa</h1>
         <p className="mt-2 text-sm text-white/80">
           Escolhe a formação — a titularidade real fica pronta quando as contas dos pais existirem.
@@ -36,7 +36,7 @@ export default function EquipaPage() {
               onClick={() => setFormation(id)}
               className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold ${
                 formation === id
-                  ? "border-pitch bg-pitch text-white"
+                  ? "border-blue bg-blue text-white"
                   : "border-line bg-white text-ink/70"
               }`}
             >
@@ -48,7 +48,7 @@ export default function EquipaPage() {
         <Pitch slots={FORMATIONS[formation]} lineupIds={lineupIds} players={roster} />
 
         <section className="mt-6">
-          <h2 className="mb-2 border-l-4 border-pitch pl-3 font-display text-lg font-semibold text-ink">
+          <h2 className="mb-2 border-l-4 border-blue pl-3 font-display text-lg font-semibold text-ink">
             Banco · {bench.length} atletas
           </h2>
           <ul className="rounded-2xl border border-line bg-white px-4">

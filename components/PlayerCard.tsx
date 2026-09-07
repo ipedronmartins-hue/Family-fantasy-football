@@ -3,7 +3,7 @@ import { Player } from "@/types/player";
 export function PlayerCard({ player }: { player: Player }) {
   return (
     <li className="flex items-start gap-3 border-b border-line py-3 last:border-b-0">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pitch font-display text-sm font-semibold text-white">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue font-display text-sm font-semibold text-white">
         {player.number}
       </span>
       <div className="min-w-0">
