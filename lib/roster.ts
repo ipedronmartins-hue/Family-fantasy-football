@@ -8,3 +8,12 @@ export function groupRosterByPosition(players: Player[]): { group: PositionGroup
       .sort((a, b) => a.number - b.number),
   })).filter((section) => section.players.length > 0);
 }
+
+export function findPlayer(players: Player[], id: string): Player | undefined {
+  return players.find((p) => p.id === id);
+}
+
+export function playersNotIn(players: Player[], ids: string[]): Player[] {
+  const idSet = new Set(ids);
+  return players.filter((p) => !idSet.has(p.id)).sort((a, b) => a.number - b.number);
+}

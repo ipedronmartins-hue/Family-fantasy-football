@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Oswald, Work_Sans } from "next/font/google";
+import { BottomNav } from "@/components/BottomNav";
 import "./globals.css";
 
 const oswald = Oswald({
@@ -24,7 +25,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="pt-PT"
       className={`${oswald.variable} ${workSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">
+        {children}
+        <BottomNav />
+      </body>
     </html>
   );
 }
