@@ -1,7 +1,9 @@
-import { getNextFixture, getFixtureById } from "@/db/seed/fixtures";
-import { roster } from "@/db/seed/roster";
+import { getNextFixture, getFixtureById } from "@/db/queries/fixtures";
+import { getRoster } from "@/db/queries/players";
 import { formatMatchDate } from "@/lib/format";
 import { PredictionForm } from "@/components/PredictionForm";
+
+export const dynamic = "force-dynamic";
 
 export default async function PreverPage({
   searchParams,
@@ -9,7 +11,10 @@ export default async function PreverPage({
   searchParams: Promise<{ jornada?: string }>;
 }) {
   const { jornada } = await searchParams;
-  const match = (jornada && getFixtureById(jornada)) || getNextFixture();
+  const [match, roster] = await Promise.all([
+    jornada ? (await getFixtureById(jornada)) ?? getNextFixture() : getNextFixture(),
+    getRoster(),
+  ]);
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col pb-20">

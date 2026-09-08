@@ -1,8 +1,11 @@
-import { roster } from "@/db/seed/roster";
+import { getRoster } from "@/db/queries/players";
 import { groupRosterByPosition } from "@/lib/roster";
 import { SquadSection } from "@/components/SquadSection";
 
-export default function PlantelPage() {
+export const dynamic = "force-dynamic";
+
+export default async function PlantelPage() {
+  const roster = await getRoster();
   const sections = groupRosterByPosition(roster);
 
   return (
