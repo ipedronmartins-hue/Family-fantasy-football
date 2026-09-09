@@ -28,6 +28,13 @@ export default async function AdminPage() {
       </header>
 
       <main className="flex-1 px-5 pt-6">
+        <Link
+          href="/admin/pagamentos"
+          className="mb-4 block rounded-2xl border border-gold bg-gold/10 p-4 text-center text-sm font-semibold text-ink"
+        >
+          💳 Quotas do mês →
+        </Link>
+
         <ul className="rounded-2xl border border-line bg-white px-4">
           {(matches ?? []).map((m) => {
             const played = m.home_goals !== null && m.away_goals !== null;

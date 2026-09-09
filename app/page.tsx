@@ -39,7 +39,7 @@ export default async function InicioPage() {
   monthStart.setDate(1);
   const monthKey = monthStart.toISOString().slice(0, 10);
 
-  const [{ data: monthly }, { data: season }] = await Promise.all([
+  const [{ data: monthly }, { data: season }, quotaResult] = await Promise.all([
     supabase
       .from("monthly_leaderboard")
       .select("team_name, points")
@@ -53,10 +53,19 @@ export default async function InicioPage() {
       .eq("season_id", CURRENT_SEASON_ID)
       .order("total_points", { ascending: false })
       .limit(3),
+    hasTeam
+      ? supabase
+          .from("family_payments")
+          .select("id")
+          .eq("fantasy_team_id", parent.fantasyTeamId)
+          .eq("month", monthKey)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
 
   const monthlyLeader = monthly?.[0];
   const podium = season ?? [];
+  const quotaPaid = !!quotaResult.data;
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col pb-20">
@@ -84,10 +93,17 @@ export default async function InicioPage() {
 
         <Link
           href={ctaHref}
-          className="mb-8 block rounded-2xl bg-gold py-3.5 text-center font-display text-base font-semibold text-ink"
+          className="block rounded-2xl bg-gold py-3.5 text-center font-display text-base font-semibold text-ink"
         >
           {ctaLabel}
         </Link>
+
+        {hasTeam && (
+          <p className="mb-8 mt-2 text-center text-xs text-ink/60">
+            Quota deste mês: {quotaPaid ? "paga ✅" : "por pagar ⏳"}
+          </p>
+        )}
+        {!hasTeam && <div className="mb-8" />}
 
         <ScrollReveal>
           <section id="como-funciona" className="mb-8 scroll-mt-6">
