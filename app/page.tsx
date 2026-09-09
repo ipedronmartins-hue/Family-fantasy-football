@@ -174,11 +174,12 @@ export default async function InicioPage() {
             </h2>
             <p className="mb-3 text-sm text-ink/70">
               O Family Fantasy Soccer foi criado para aproximar os pais da equipa — mas tem
-              também um segundo objetivo: ajudar a nossa equipa. Queremos melhorar o que
-              conseguimos dar aos miúdos nos dias de jogo — o clube já dá as arrufadas, e com o
-              fundo compramos fruta, sumos ou chá e bolachas nos dias mais frios. Pedimos a quem
-              quiser participar um contributo de <strong>5 € por mês / família</strong>, que
-              ajuda a suportar isso e outras despesas, como:
+              também um segundo objetivo: ajudar a nossa equipa. O clube já dá um lanche aos
+              miúdos, mas nem todos gostam da mesma coisa — por isso queremos complementar com
+              fruta, sumos, ou chá e bolachas nos dias mais frios (já há uma garrafa térmica
+              preparada para isso). Pedimos a quem quiser participar um contributo de{" "}
+              <strong>5 € por mês / família</strong>, que ajuda a suportar isto e outras
+              despesas, como:
             </p>
             <ul className="mb-3 space-y-1.5 rounded-2xl border border-line bg-white p-4 text-sm text-ink/80">
               {FUND_ITEMS.map((item) => (
