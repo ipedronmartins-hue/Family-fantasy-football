@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { supabase as publicSupabase, CURRENT_SEASON_ID } from "@/lib/supabaseClient";
 import { getCurrentParent } from "@/lib/auth";
@@ -28,6 +28,8 @@ export default async function MatchSummaryPage({
   ]);
 
   if (!match) notFound();
+  if (parent === null) redirect("/login");
+  if (parent === "onboarding") redirect("/onboarding");
 
   const mvpQuery = match.man_of_the_match_id
     ? publicSupabase.from("players").select("name").eq("id", match.man_of_the_match_id).maybeSingle()
@@ -61,7 +63,7 @@ export default async function MatchSummaryPage({
   let myPoints: { points: number; breakdown: Record<string, number> } | null = null;
   let myVote: string | null = null;
 
-  if (parent && parent !== "onboarding") {
+  if (parent) {
     const supabase = await createServerSupabase();
     const [{ data: pred }, { data: vote }] = await Promise.all([
       supabase
@@ -157,7 +159,7 @@ export default async function MatchSummaryPage({
               </div>
             )}
 
-            {parent && parent !== "onboarding" && (
+            {parent && (
               <MotmVote matchId={match.id} players={roster} initialVote={myVote} />
             )}
 

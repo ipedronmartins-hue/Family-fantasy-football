@@ -32,6 +32,11 @@ export default async function EquipaPage() {
         <p className="mt-2 text-sm text-white/80">
           Escolhe o teu XI, marca o capitão, e guarda.
         </p>
+        <p className="mt-2 text-xs text-white/60">
+          Isto é a tua Fantasy Team — os jogadores que escolhes para ti, independentemente de
+          jogarem ou não. É diferente do "11 provável" que preenches em cada Previsão (o que
+          achas que vai ser a titularidade real do treinador).
+        </p>
       </header>
 
       <main className="flex-1 px-5 pt-6">

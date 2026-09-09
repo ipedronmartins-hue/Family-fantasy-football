@@ -34,10 +34,17 @@ export default async function AdminPage() {
             href="/admin/pagamentos"
             className="block rounded-2xl border border-gold bg-gold/10 p-4 text-center text-sm font-semibold text-ink"
           >
-            💳 Quotas do mês →
+            💳 Contributos do mês →
           </Link>
           <FixedCostButton />
         </div>
+
+        <Link
+          href="/admin/pontuacao"
+          className="mb-4 block rounded-2xl border border-line bg-white p-4 text-center text-sm font-semibold text-blue"
+        >
+          🎯 Regras de pontuação →
+        </Link>
 
         <ul className="rounded-2xl border border-line bg-white px-4">
           {(matches ?? []).map((m) => {

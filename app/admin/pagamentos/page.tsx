@@ -20,26 +20,23 @@ export default async function AdminPaymentsPage() {
   const supabase = await createServerSupabase();
   const [{ data: teams }, { data: payments }] = await Promise.all([
     supabase.from("fantasy_teams").select("id, name").eq("season_id", CURRENT_SEASON_ID).order("name"),
-    supabase
-      .from("family_payments")
-      .select("fantasy_team_id, amount")
-      .eq("season_id", CURRENT_SEASON_ID)
-      .eq("month", monthKey),
+    supabase.from("family_payments").select("fantasy_team_id, amount, method").eq("season_id", CURRENT_SEASON_ID).eq("month", monthKey),
   ]);
 
-  const paidMap = new Map((payments ?? []).map((p) => [p.fantasy_team_id, p.amount]));
+  const paidMap = new Map((payments ?? []).map((p) => [p.fantasy_team_id, p]));
   const families: FamilyRow[] = (teams ?? []).map((t) => ({
     fantasyTeamId: t.id,
     teamName: t.name,
     paid: paidMap.has(t.id),
-    amount: paidMap.get(t.id) ?? null,
+    amount: paidMap.get(t.id)?.amount ?? null,
+    method: paidMap.get(t.id)?.method ?? null,
   }));
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col pb-20">
       <header className="bg-blue px-5 pb-6 pt-8 text-white">
         <p className="text-sm text-white/70">Admin</p>
-        <h1 className="mt-1 font-display text-3xl font-semibold capitalize">Quotas · {monthLabel}</h1>
+        <h1 className="mt-1 font-display text-3xl font-semibold capitalize">Contributos · {monthLabel}</h1>
       </header>
 
       <main className="flex-1 px-5 pt-6">

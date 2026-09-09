@@ -9,7 +9,6 @@ interface PlayerRow {
   position_group: PositionGroup;
   position_label: string;
   traits: string[];
-  ytb_athlete_id: string | null;
   rating: number | null;
 }
 
@@ -21,7 +20,6 @@ function mapRow(row: PlayerRow): Player {
     positionGroup: row.position_group,
     positionLabel: row.position_label,
     traits: row.traits ?? [],
-    ytbAthleteId: row.ytb_athlete_id ?? undefined,
     rating: row.rating ?? undefined,
   };
 }
@@ -29,7 +27,7 @@ function mapRow(row: PlayerRow): Player {
 export async function getRoster(): Promise<Player[]> {
   const { data, error } = await supabase
     .from("players")
-    .select("id, external_id, name, shirt_number, position_group, position_label, traits, ytb_athlete_id, rating")
+    .select("id, external_id, name, shirt_number, position_group, position_label, traits, rating")
     .eq("season_id", CURRENT_SEASON_ID)
     .order("shirt_number");
 

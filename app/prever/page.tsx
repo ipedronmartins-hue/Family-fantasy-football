@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getNextFixture, getFixtureByCode } from "@/db/queries/fixtures";
 import { getRoster } from "@/db/queries/players";
 import { getCurrentParent } from "@/lib/auth";
@@ -46,7 +47,6 @@ export default async function PreverPage({
 
   const initial = existing
     ? {
-        outcome: "home" as const,
         goalsHome: existing.predicted_home_goals?.toString() ?? "",
         goalsAway: existing.predicted_away_goals?.toString() ?? "",
         scorer: existing.predicted_scorer_id ?? "",
@@ -69,6 +69,10 @@ export default async function PreverPage({
       </header>
 
       <main className="flex-1 px-5 pt-6">
+        <Link href="/pontuacao" className="mb-4 block text-center text-xs font-semibold text-blue">
+          Como se ganham pontos? →
+        </Link>
+
         <PredictionForm
           match={match}
           players={roster}

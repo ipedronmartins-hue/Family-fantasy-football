@@ -7,12 +7,21 @@ import { createBrowserSupabase } from "@/lib/supabase/client";
 import { PlayerChecklist } from "@/components/PlayerChecklist";
 
 interface InitialPrediction {
-  outcome: "home" | "draw" | "away";
   goalsHome: string;
   goalsAway: string;
   scorer: string;
   assist: string;
   mvp: string;
+}
+
+function deriveOutcome(goalsHome: string, goalsAway: string): "home" | "draw" | "away" | null {
+  if (goalsHome === "" || goalsAway === "") return null;
+  const h = Number(goalsHome);
+  const a = Number(goalsAway);
+  if (Number.isNaN(h) || Number.isNaN(a)) return null;
+  if (h > a) return "home";
+  if (h < a) return "away";
+  return "draw";
 }
 
 export function PredictionForm({
@@ -30,7 +39,6 @@ export function PredictionForm({
   initialLineup: string[];
   locked: boolean;
 }) {
-  const [outcome, setOutcome] = useState<"home" | "draw" | "away">(initial?.outcome ?? "home");
   const [goalsHome, setGoalsHome] = useState(initial?.goalsHome ?? "");
   const [goalsAway, setGoalsAway] = useState(initial?.goalsAway ?? "");
   const [scorer, setScorer] = useState(initial?.scorer ?? "");
@@ -43,6 +51,9 @@ export function PredictionForm({
   const attackers = players.filter((p) => p.positionGroup === "EXT" || p.positionGroup === "AV");
   const homeLabel = match.home ? "Gondomar SC" : match.opponent;
   const awayLabel = match.home ? match.opponent : "Gondomar SC";
+  const outcome = deriveOutcome(goalsHome, goalsAway);
+  const outcomeLabel =
+    outcome === "home" ? `${homeLabel} vence` : outcome === "away" ? `${awayLabel} vence` : outcome === "draw" ? "Empate" : null;
 
   function toggleLineup(id: string) {
     setLineup((prev) => {
@@ -65,6 +76,7 @@ export function PredictionForm({
           match_id: match.id,
           predicted_home_goals: goalsHome === "" ? null : Number(goalsHome),
           predicted_away_goals: goalsAway === "" ? null : Number(goalsAway),
+          predicted_outcome: outcome,
           predicted_scorer_id: scorer || null,
           predicted_assist_id: assist || null,
           predicted_mvp_id: mvp || null,
@@ -109,28 +121,18 @@ export function PredictionForm({
 
   return (
     <div className="rounded-2xl border border-line bg-white p-4">
+      <p className="mb-4 text-xs text-ink/50">
+        Isto é o <strong>11 provável</strong> — quem achas que o treinador vai pôr a titular
+        neste jogo. É diferente da tua Fantasy Team (a equipa que montaste em "A Minha Equipa").
+      </p>
+
       <label className="mb-1.5 block text-xs font-semibold text-ink/70">11 provável</label>
       <div className="mb-5">
         <PlayerChecklist players={players} selected={lineup} onToggle={toggleLineup} />
       </div>
 
-      <label className="mb-1.5 block text-xs font-semibold text-ink/70">Resultado</label>
-      <div className="mb-4 flex gap-2">
-        {(["home", "draw", "away"] as const).map((key) => (
-          <button
-            key={key}
-            onClick={() => setOutcome(key)}
-            className={`flex-1 rounded-full border px-2 py-2 text-xs font-semibold ${
-              outcome === key ? "border-blue bg-blue text-white" : "border-line text-ink/70"
-            }`}
-          >
-            {key === "home" ? homeLabel : key === "draw" ? "Empate" : awayLabel}
-          </button>
-        ))}
-      </div>
-
       <label className="mb-1.5 block text-xs font-semibold text-ink/70">Resultado exato</label>
-      <div className="mb-4 flex items-center gap-2">
+      <div className="mb-2 flex items-center gap-2">
         <input
           value={goalsHome}
           onChange={(e) => setGoalsHome(e.target.value)}
@@ -147,6 +149,9 @@ export function PredictionForm({
           className="w-16 rounded-xl border border-line px-3 py-2 text-center"
         />
       </div>
+      <p className="mb-4 text-xs text-ink/50">
+        {outcomeLabel ? `Resultado previsto: ${outcomeLabel}` : "Preenche os golos para veres o resultado previsto."}
+      </p>
 
       <label className="mb-1.5 block text-xs font-semibold text-ink/70">Marcador</label>
       <select

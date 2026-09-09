@@ -11,8 +11,6 @@ export interface Player {
   /** Specific position label as used by the club (e.g. "Defesa Central"). */
   positionLabel: string;
   traits: string[];
-  /** Optional link to a YourTalentBase athlete record, for future integration. */
-  ytbAthleteId?: string;
   /** Optional rating, not used for Fantasy scoring in V1. */
   rating?: number;
 }

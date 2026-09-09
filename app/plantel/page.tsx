@@ -1,10 +1,16 @@
+import { redirect } from "next/navigation";
 import { getRoster } from "@/db/queries/players";
+import { getCurrentParent } from "@/lib/auth";
 import { groupRosterByPosition } from "@/lib/roster";
 import { SquadSection } from "@/components/SquadSection";
 
 export const dynamic = "force-dynamic";
 
 export default async function PlantelPage() {
+  const parent = await getCurrentParent();
+  if (parent === null) redirect("/login");
+  if (parent === "onboarding") redirect("/onboarding");
+
   const roster = await getRoster();
   const sections = groupRosterByPosition(roster);
 
