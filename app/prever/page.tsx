@@ -13,11 +13,10 @@ export default async function PreverPage({
 }: {
   searchParams: Promise<{ jornada?: string }>;
 }) {
-  const parent = await getCurrentParent();
+  const [parent, { jornada }] = await Promise.all([getCurrentParent(), searchParams]);
   if (parent === null) redirect("/login");
   if (parent === "onboarding") redirect("/onboarding");
 
-  const { jornada } = await searchParams;
   const [match, roster] = await Promise.all([
     jornada ? (await getFixtureByCode(jornada)) ?? getNextFixture() : getNextFixture(),
     getRoster(),
@@ -25,19 +24,16 @@ export default async function PreverPage({
 
   const supabase = await createServerSupabase();
 
-  const { data: matchRow } = await supabase
-    .from("matches")
-    .select("locked_at")
-    .eq("id", match.id)
-    .maybeSingle();
+  const [{ data: matchRow }, { data: existing }] = await Promise.all([
+    supabase.from("matches").select("locked_at").eq("id", match.id).maybeSingle(),
+    supabase
+      .from("predictions")
+      .select("id, predicted_home_goals, predicted_away_goals, predicted_scorer_id, predicted_assist_id, predicted_mvp_id")
+      .eq("fantasy_team_id", parent.fantasyTeamId)
+      .eq("match_id", match.id)
+      .maybeSingle(),
+  ]);
   const locked = !!matchRow?.locked_at && new Date(matchRow.locked_at) <= new Date();
-
-  const { data: existing } = await supabase
-    .from("predictions")
-    .select("id, predicted_home_goals, predicted_away_goals, predicted_scorer_id, predicted_assist_id, predicted_mvp_id")
-    .eq("fantasy_team_id", parent.fantasyTeamId)
-    .eq("match_id", match.id)
-    .maybeSingle();
 
   let initialLineup: string[] = [];
   if (existing) {

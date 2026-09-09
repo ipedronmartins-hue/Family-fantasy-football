@@ -16,16 +16,24 @@ export default async function MatchSummaryPage({
   const { code } = await params;
   const matchday = Number(code.replace("J", ""));
 
-  const { data: match } = await publicSupabase
-    .from("matches")
-    .select("id, matchday, opponent, home, kickoff_at, home_goals, away_goals, man_of_the_match_id")
-    .eq("season_id", CURRENT_SEASON_ID)
-    .eq("matchday", matchday)
-    .maybeSingle();
+  const [{ data: match }, parent, roster] = await Promise.all([
+    publicSupabase
+      .from("matches")
+      .select("id, matchday, opponent, home, kickoff_at, home_goals, away_goals, man_of_the_match_id")
+      .eq("season_id", CURRENT_SEASON_ID)
+      .eq("matchday", matchday)
+      .maybeSingle(),
+    getCurrentParent(),
+    getRoster(),
+  ]);
 
   if (!match) notFound();
 
-  const [{ data: goals }, { data: voteTally }, { data: matchdayTop }] = await Promise.all([
+  const mvpQuery = match.man_of_the_match_id
+    ? publicSupabase.from("players").select("name").eq("id", match.man_of_the_match_id).maybeSingle()
+    : Promise.resolve({ data: null as { name: string } | null });
+
+  const [{ data: goals }, { data: voteTally }, { data: matchdayTop }, { data: mvp }] = await Promise.all([
     publicSupabase
       .from("match_goals")
       .select("scorer_id, assist_id, players!match_goals_scorer_id_fkey(name)")
@@ -41,15 +49,11 @@ export default async function MatchSummaryPage({
       .eq("match_id", match.id)
       .order("points", { ascending: false })
       .limit(1),
+    mvpQuery,
   ]);
-
-  const { data: mvp } = match.man_of_the_match_id
-    ? await publicSupabase.from("players").select("name").eq("id", match.man_of_the_match_id).maybeSingle()
-    : { data: null };
 
   const played = match.home_goals !== null && match.away_goals !== null;
 
-  const parent = await getCurrentParent();
   let myPrediction: {
     predicted_home_goals: number | null;
     predicted_away_goals: number | null;
@@ -59,12 +63,20 @@ export default async function MatchSummaryPage({
 
   if (parent && parent !== "onboarding") {
     const supabase = await createServerSupabase();
-    const { data: pred } = await supabase
-      .from("predictions")
-      .select("id, predicted_home_goals, predicted_away_goals")
-      .eq("fantasy_team_id", parent.fantasyTeamId)
-      .eq("match_id", match.id)
-      .maybeSingle();
+    const [{ data: pred }, { data: vote }] = await Promise.all([
+      supabase
+        .from("predictions")
+        .select("id, predicted_home_goals, predicted_away_goals")
+        .eq("fantasy_team_id", parent.fantasyTeamId)
+        .eq("match_id", match.id)
+        .maybeSingle(),
+      supabase
+        .from("motm_votes")
+        .select("player_id")
+        .eq("match_id", match.id)
+        .eq("parent_id", parent.userId)
+        .maybeSingle(),
+    ]);
 
     if (pred) {
       myPrediction = pred;
@@ -75,13 +87,6 @@ export default async function MatchSummaryPage({
         .maybeSingle();
       if (points) myPoints = points as { points: number; breakdown: Record<string, number> };
     }
-
-    const { data: vote } = await supabase
-      .from("motm_votes")
-      .select("player_id")
-      .eq("match_id", match.id)
-      .eq("parent_id", parent.userId)
-      .maybeSingle();
     myVote = vote?.player_id ?? null;
   }
 
@@ -153,7 +158,7 @@ export default async function MatchSummaryPage({
             )}
 
             {parent && parent !== "onboarding" && (
-              <MotmVote matchId={match.id} players={await getRoster()} initialVote={myVote} />
+              <MotmVote matchId={match.id} players={roster} initialVote={myVote} />
             )}
 
             {voteTally && voteTally.length > 0 && (

@@ -8,11 +8,13 @@ import { FormationId } from "@/config/formations";
 export const dynamic = "force-dynamic";
 
 export default async function EquipaPage() {
-  const parent = await getCurrentParent();
+  const [parent, roster, supabase] = await Promise.all([
+    getCurrentParent(),
+    getRoster(),
+    createServerSupabase(),
+  ]);
   if (parent === null) redirect("/login");
   if (parent === "onboarding") redirect("/onboarding");
-
-  const [roster, supabase] = [await getRoster(), await createServerSupabase()];
 
   const { data: lineup } = await supabase
     .from("fantasy_lineups")

@@ -39,20 +39,21 @@ export default async function InicioPage() {
   monthStart.setDate(1);
   const monthKey = monthStart.toISOString().slice(0, 10);
 
-  const { data: monthly } = await supabase
-    .from("monthly_leaderboard")
-    .select("team_name, points")
-    .eq("season_id", CURRENT_SEASON_ID)
-    .eq("month", monthKey)
-    .order("points", { ascending: false })
-    .limit(1);
-
-  const { data: season } = await supabase
-    .from("season_leaderboard")
-    .select("team_name, total_points")
-    .eq("season_id", CURRENT_SEASON_ID)
-    .order("total_points", { ascending: false })
-    .limit(3);
+  const [{ data: monthly }, { data: season }] = await Promise.all([
+    supabase
+      .from("monthly_leaderboard")
+      .select("team_name, points")
+      .eq("season_id", CURRENT_SEASON_ID)
+      .eq("month", monthKey)
+      .order("points", { ascending: false })
+      .limit(1),
+    supabase
+      .from("season_leaderboard")
+      .select("team_name, total_points")
+      .eq("season_id", CURRENT_SEASON_ID)
+      .order("total_points", { ascending: false })
+      .limit(3),
+  ]);
 
   const monthlyLeader = monthly?.[0];
   const podium = season ?? [];

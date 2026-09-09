@@ -12,22 +12,24 @@ export default async function AdminMatchPage({
 }: {
   params: Promise<{ code: string }>;
 }) {
-  const parent = await getCurrentParent();
-  if (parent === null) redirect("/login");
-  if (parent === "onboarding") redirect("/onboarding");
-  if (!parent.isAdmin) redirect("/");
-
   const { code } = await params;
   const matchday = Number(code.replace("J", ""));
 
   const supabase = await createServerSupabase();
-  const { data: match } = await supabase
-    .from("matches")
-    .select("id, matchday, opponent, home, home_goals, away_goals, man_of_the_match_id, locked_at")
-    .eq("season_id", CURRENT_SEASON_ID)
-    .eq("matchday", matchday)
-    .maybeSingle();
+  const [parent, { data: match }, roster] = await Promise.all([
+    getCurrentParent(),
+    supabase
+      .from("matches")
+      .select("id, matchday, opponent, home, home_goals, away_goals, man_of_the_match_id, locked_at")
+      .eq("season_id", CURRENT_SEASON_ID)
+      .eq("matchday", matchday)
+      .maybeSingle(),
+    getRoster(),
+  ]);
 
+  if (parent === null) redirect("/login");
+  if (parent === "onboarding") redirect("/onboarding");
+  if (!parent.isAdmin) redirect("/");
   if (!match) notFound();
 
   const [{ data: goals }, { data: realLineup }, { count: totalTeams }, { count: submittedCount }] =
@@ -44,7 +46,6 @@ export default async function AdminMatchPage({
         .eq("match_id", match.id),
     ]);
 
-  const roster = await getRoster();
   const locked = !!match.locked_at && new Date(match.locked_at) <= new Date();
 
   return (

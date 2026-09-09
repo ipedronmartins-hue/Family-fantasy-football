@@ -3,6 +3,10 @@ import { Oswald, Work_Sans } from "next/font/google";
 import { BottomNav } from "@/components/BottomNav";
 import "./globals.css";
 
+// Supabase project lives in eu-west-1 (Ireland) -- run Vercel's functions in
+// the closest region so every request avoids a transatlantic round trip.
+export const preferredRegion = "dub1";
+
 const oswald = Oswald({
   variable: "--font-oswald",
   subsets: ["latin"],
