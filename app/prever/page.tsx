@@ -24,12 +24,29 @@ export default async function PreverPage({
   ]);
 
   const supabase = await createServerSupabase();
+
+  const { data: matchRow } = await supabase
+    .from("matches")
+    .select("locked_at")
+    .eq("id", match.id)
+    .maybeSingle();
+  const locked = !!matchRow?.locked_at && new Date(matchRow.locked_at) <= new Date();
+
   const { data: existing } = await supabase
     .from("predictions")
-    .select("predicted_home_goals, predicted_away_goals, predicted_scorer_id, predicted_assist_id, predicted_mvp_id")
+    .select("id, predicted_home_goals, predicted_away_goals, predicted_scorer_id, predicted_assist_id, predicted_mvp_id")
     .eq("fantasy_team_id", parent.fantasyTeamId)
     .eq("match_id", match.id)
     .maybeSingle();
+
+  let initialLineup: string[] = [];
+  if (existing) {
+    const { data: lineupRows } = await supabase
+      .from("predicted_lineups")
+      .select("player_id")
+      .eq("prediction_id", existing.id);
+    initialLineup = (lineupRows ?? []).map((r) => r.player_id);
+  }
 
   const initial = existing
     ? {
@@ -61,6 +78,8 @@ export default async function PreverPage({
           players={roster}
           fantasyTeamId={parent.fantasyTeamId}
           initial={initial}
+          initialLineup={initialLineup}
+          locked={locked}
         />
       </main>
     </div>

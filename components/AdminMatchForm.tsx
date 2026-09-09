@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Player } from "@/types/player";
 import { createBrowserSupabase } from "@/lib/supabase/client";
+import { PlayerChecklist } from "@/components/PlayerChecklist";
 
 export interface GoalRow {
   id: string;
@@ -17,6 +18,10 @@ export function AdminMatchForm({
   initialAwayGoals,
   initialMvp,
   initialGoals,
+  initialLocked,
+  initialRealLineup,
+  submittedCount,
+  totalTeams,
 }: {
   matchId: string;
   players: Player[];
@@ -24,6 +29,10 @@ export function AdminMatchForm({
   initialAwayGoals: number | null;
   initialMvp: string | null;
   initialGoals: GoalRow[];
+  initialLocked: boolean;
+  initialRealLineup: string[];
+  submittedCount: number;
+  totalTeams: number;
 }) {
   const [homeGoals, setHomeGoals] = useState(initialHomeGoals?.toString() ?? "");
   const [awayGoals, setAwayGoals] = useState(initialAwayGoals?.toString() ?? "");
@@ -31,10 +40,59 @@ export function AdminMatchForm({
   const [goals, setGoals] = useState<GoalRow[]>(initialGoals);
   const [newScorer, setNewScorer] = useState("");
   const [newAssist, setNewAssist] = useState("");
+  const [locked, setLocked] = useState(initialLocked);
+  const [realLineup, setRealLineup] = useState<Set<string>>(new Set(initialRealLineup));
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const byId = new Map(players.map((p) => [p.id, p]));
+
+  async function toggleLock() {
+    setBusy(true);
+    setMessage(null);
+    const supabase = createBrowserSupabase();
+    const { error } = await supabase
+      .from("matches")
+      .update({ locked_at: locked ? null : new Date().toISOString() })
+      .eq("id", matchId);
+    setBusy(false);
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+    setLocked(!locked);
+    setMessage(locked ? "Previsões reabertas." : "Previsões fechadas — mais ninguém pode alterar.");
+  }
+
+  function toggleRealLineupPlayer(id: string) {
+    setRealLineup((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  async function saveRealLineup() {
+    setBusy(true);
+    setMessage(null);
+    const supabase = createBrowserSupabase();
+    await supabase.from("match_lineups").delete().eq("match_id", matchId);
+    if (realLineup.size > 0) {
+      const rows = Array.from(realLineup).map((playerId) => ({
+        match_id: matchId,
+        player_id: playerId,
+        started: true,
+      }));
+      const { error } = await supabase.from("match_lineups").insert(rows);
+      if (error) {
+        setBusy(false);
+        setMessage(error.message);
+        return;
+      }
+    }
+    setBusy(false);
+    setMessage("Onze real guardado.");
+  }
 
   async function saveResult() {
     setBusy(true);
@@ -95,6 +153,39 @@ export function AdminMatchForm({
 
   return (
     <div className="space-y-5">
+      <section className="rounded-2xl border border-line bg-white p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-display text-base font-semibold text-ink">Previsões</h2>
+          <span className={`text-xs font-semibold ${locked ? "text-red" : "text-blue"}`}>
+            {locked ? "🔒 Fechadas" : "🔓 Abertas"}
+          </span>
+        </div>
+        <p className="mb-3 text-xs text-ink/60">
+          {submittedCount} de {totalTeams} equipas já submeteram previsão
+        </p>
+        <button
+          onClick={toggleLock}
+          disabled={busy}
+          className={`w-full rounded-xl py-2.5 text-sm font-semibold disabled:opacity-50 ${
+            locked ? "border border-blue text-blue" : "bg-red text-white"
+          }`}
+        >
+          {locked ? "Reabrir previsões" : "Fechar previsões desta jornada"}
+        </button>
+      </section>
+
+      <section className="rounded-2xl border border-line bg-white p-4">
+        <h2 className="mb-3 font-display text-base font-semibold text-ink">Onze real (titulares)</h2>
+        <PlayerChecklist players={players} selected={realLineup} onToggle={toggleRealLineupPlayer} />
+        <button
+          onClick={saveRealLineup}
+          disabled={busy}
+          className="mt-3 w-full rounded-xl border border-blue py-2.5 text-sm font-semibold text-blue disabled:opacity-50"
+        >
+          Guardar onze real
+        </button>
+      </section>
+
       <section className="rounded-2xl border border-line bg-white p-4">
         <h2 className="mb-3 font-display text-base font-semibold text-ink">Resultado</h2>
         <div className="mb-3 flex items-center gap-2">

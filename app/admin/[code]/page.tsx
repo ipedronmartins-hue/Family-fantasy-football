@@ -23,19 +23,29 @@ export default async function AdminMatchPage({
   const supabase = await createServerSupabase();
   const { data: match } = await supabase
     .from("matches")
-    .select("id, matchday, opponent, home, home_goals, away_goals, man_of_the_match_id")
+    .select("id, matchday, opponent, home, home_goals, away_goals, man_of_the_match_id, locked_at")
     .eq("season_id", CURRENT_SEASON_ID)
     .eq("matchday", matchday)
     .maybeSingle();
 
   if (!match) notFound();
 
-  const { data: goals } = await supabase
-    .from("match_goals")
-    .select("id, scorer_id, assist_id")
-    .eq("match_id", match.id);
+  const [{ data: goals }, { data: realLineup }, { count: totalTeams }, { count: submittedCount }] =
+    await Promise.all([
+      supabase.from("match_goals").select("id, scorer_id, assist_id").eq("match_id", match.id),
+      supabase.from("match_lineups").select("player_id").eq("match_id", match.id),
+      supabase
+        .from("fantasy_teams")
+        .select("id", { count: "exact", head: true })
+        .eq("season_id", CURRENT_SEASON_ID),
+      supabase
+        .from("predictions")
+        .select("id", { count: "exact", head: true })
+        .eq("match_id", match.id),
+    ]);
 
   const roster = await getRoster();
+  const locked = !!match.locked_at && new Date(match.locked_at) <= new Date();
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col pb-20">
@@ -59,6 +69,10 @@ export default async function AdminMatchPage({
             scorerId: g.scorer_id,
             assistId: g.assist_id,
           }))}
+          initialLocked={locked}
+          initialRealLineup={(realLineup ?? []).map((l) => l.player_id)}
+          submittedCount={submittedCount ?? 0}
+          totalTeams={totalTeams ?? 0}
         />
       </main>
     </div>

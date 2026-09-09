@@ -16,7 +16,7 @@ export default async function AdminPage() {
   const supabase = await createServerSupabase();
   const { data: matches } = await supabase
     .from("matches")
-    .select("id, matchday, opponent, home, kickoff_at, home_goals, away_goals")
+    .select("id, matchday, opponent, home, kickoff_at, home_goals, away_goals, locked_at")
     .eq("season_id", CURRENT_SEASON_ID)
     .order("matchday");
 
@@ -31,6 +31,7 @@ export default async function AdminPage() {
         <ul className="rounded-2xl border border-line bg-white px-4">
           {(matches ?? []).map((m) => {
             const played = m.home_goals !== null && m.away_goals !== null;
+            const locked = !!m.locked_at && new Date(m.locked_at) <= new Date();
             return (
               <li key={m.id} className="border-b border-line py-3 last:border-b-0">
                 <Link href={`/admin/J${m.matchday}`} className="flex items-center gap-3">
@@ -41,7 +42,9 @@ export default async function AdminPage() {
                     <p className="truncate text-sm font-semibold text-ink">
                       {m.home ? "Gondomar SC" : m.opponent} vs {m.home ? m.opponent : "Gondomar SC"}
                     </p>
-                    <p className="text-xs text-ink/50">{formatMatchDate(m.kickoff_at.slice(0, 10))}</p>
+                    <p className="text-xs text-ink/50">
+                      {formatMatchDate(m.kickoff_at.slice(0, 10))} · {locked ? "🔒 fechada" : "🔓 aberta"}
+                    </p>
                   </div>
                   <span className={`shrink-0 text-xs font-semibold ${played ? "text-blue" : "text-ink/30"}`}>
                     {played ? `${m.home_goals}-${m.away_goals}` : "por jogar"}

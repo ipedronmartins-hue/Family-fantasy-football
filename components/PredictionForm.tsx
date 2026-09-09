@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Player } from "@/types/player";
 import { Match } from "@/types/match";
 import { createBrowserSupabase } from "@/lib/supabase/client";
+import { PlayerChecklist } from "@/components/PlayerChecklist";
 
 interface InitialPrediction {
   outcome: "home" | "draw" | "away";
@@ -19,11 +20,15 @@ export function PredictionForm({
   players,
   fantasyTeamId,
   initial,
+  initialLineup,
+  locked,
 }: {
   match: Match;
   players: Player[];
   fantasyTeamId: string;
   initial: InitialPrediction | null;
+  initialLineup: string[];
+  locked: boolean;
 }) {
   const [outcome, setOutcome] = useState<"home" | "draw" | "away">(initial?.outcome ?? "home");
   const [goalsHome, setGoalsHome] = useState(initial?.goalsHome ?? "");
@@ -31,6 +36,7 @@ export function PredictionForm({
   const [scorer, setScorer] = useState(initial?.scorer ?? "");
   const [assist, setAssist] = useState(initial?.assist ?? "");
   const [mvp, setMvp] = useState(initial?.mvp ?? "");
+  const [lineup, setLineup] = useState<Set<string>>(new Set(initialLineup));
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -38,31 +44,76 @@ export function PredictionForm({
   const homeLabel = match.home ? "Gondomar SC" : match.opponent;
   const awayLabel = match.home ? match.opponent : "Gondomar SC";
 
+  function toggleLineup(id: string) {
+    setLineup((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
   async function handleSave() {
     setSaving(true);
     setMessage(null);
     const supabase = createBrowserSupabase();
 
-    const { error } = await supabase.from("predictions").upsert(
-      {
-        fantasy_team_id: fantasyTeamId,
-        match_id: match.id,
-        predicted_home_goals: goalsHome === "" ? null : Number(goalsHome),
-        predicted_away_goals: goalsAway === "" ? null : Number(goalsAway),
-        predicted_scorer_id: scorer || null,
-        predicted_assist_id: assist || null,
-        predicted_mvp_id: mvp || null,
-        submitted_at: new Date().toISOString(),
-      },
-      { onConflict: "fantasy_team_id,match_id" }
-    );
+    const { data: pred, error } = await supabase
+      .from("predictions")
+      .upsert(
+        {
+          fantasy_team_id: fantasyTeamId,
+          match_id: match.id,
+          predicted_home_goals: goalsHome === "" ? null : Number(goalsHome),
+          predicted_away_goals: goalsAway === "" ? null : Number(goalsAway),
+          predicted_scorer_id: scorer || null,
+          predicted_assist_id: assist || null,
+          predicted_mvp_id: mvp || null,
+          submitted_at: new Date().toISOString(),
+        },
+        { onConflict: "fantasy_team_id,match_id" }
+      )
+      .select("id")
+      .single();
+
+    if (error || !pred) {
+      setSaving(false);
+      setMessage(error?.message ?? "Não foi possível guardar.");
+      return;
+    }
+
+    await supabase.from("predicted_lineups").delete().eq("prediction_id", pred.id);
+    if (lineup.size > 0) {
+      const rows = Array.from(lineup).map((playerId) => ({
+        prediction_id: pred.id,
+        player_id: playerId,
+      }));
+      const { error: lineupError } = await supabase.from("predicted_lineups").insert(rows);
+      if (lineupError) {
+        setSaving(false);
+        setMessage(lineupError.message);
+        return;
+      }
+    }
 
     setSaving(false);
-    setMessage(error ? error.message : "Previsão guardada.");
+    setMessage("Previsão guardada.");
+  }
+
+  if (locked) {
+    return (
+      <div className="rounded-2xl border border-line bg-white p-4 text-center text-sm text-ink/60">
+        As previsões para esta jornada já estão fechadas.
+      </div>
+    );
   }
 
   return (
     <div className="rounded-2xl border border-line bg-white p-4">
+      <label className="mb-1.5 block text-xs font-semibold text-ink/70">11 provável</label>
+      <div className="mb-5">
+        <PlayerChecklist players={players} selected={lineup} onToggle={toggleLineup} />
+      </div>
+
       <label className="mb-1.5 block text-xs font-semibold text-ink/70">Resultado</label>
       <div className="mb-4 flex gap-2">
         {(["home", "draw", "away"] as const).map((key) => (
