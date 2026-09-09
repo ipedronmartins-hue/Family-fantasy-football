@@ -18,6 +18,7 @@ const HOW_IT_WORKS = [
 const FUND_ITEMS = [
   "⚽ bolas e material de treino",
   "🎒 porta-garrafas e outro material necessário",
+  "🍎 fruta, sumos ou chá e bolachas nos dias mais frios",
   "🏆 inscrições da equipa técnica em torneios",
   "🚌 despesas e apoio a deslocações realizadas em benefício da equipa",
   "🚗 plafond de apoio para quem disponibiliza a sua viatura",
@@ -173,9 +174,11 @@ export default async function InicioPage() {
             </h2>
             <p className="mb-3 text-sm text-ink/70">
               O Family Fantasy Soccer foi criado para aproximar os pais da equipa — mas tem
-              também um segundo objetivo: ajudar a nossa equipa. Pedimos a quem quiser
-              participar um contributo de <strong>5 € por mês / família</strong>, que ajuda a
-              suportar despesas como:
+              também um segundo objetivo: ajudar a nossa equipa. Queremos melhorar o que
+              conseguimos dar aos miúdos nos dias de jogo — o clube já dá as arrufadas, e com o
+              fundo compramos fruta, sumos ou chá e bolachas nos dias mais frios. Pedimos a quem
+              quiser participar um contributo de <strong>5 € por mês / família</strong>, que
+              ajuda a suportar isso e outras despesas, como:
             </p>
             <ul className="mb-3 space-y-1.5 rounded-2xl border border-line bg-white p-4 text-sm text-ink/80">
               {FUND_ITEMS.map((item) => (

@@ -4,6 +4,7 @@ import { getCurrentParent } from "@/lib/auth";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { CURRENT_SEASON_ID } from "@/lib/supabaseClient";
 import { formatMatchDate } from "@/lib/format";
+import { FixedCostButton } from "@/components/FixedCostButton";
 
 export const dynamic = "force-dynamic";
 
@@ -28,12 +29,15 @@ export default async function AdminPage() {
       </header>
 
       <main className="flex-1 px-5 pt-6">
-        <Link
-          href="/admin/pagamentos"
-          className="mb-4 block rounded-2xl border border-gold bg-gold/10 p-4 text-center text-sm font-semibold text-ink"
-        >
-          💳 Quotas do mês →
-        </Link>
+        <div className="mb-4 grid grid-cols-2 gap-2">
+          <Link
+            href="/admin/pagamentos"
+            className="block rounded-2xl border border-gold bg-gold/10 p-4 text-center text-sm font-semibold text-ink"
+          >
+            💳 Quotas do mês →
+          </Link>
+          <FixedCostButton />
+        </div>
 
         <ul className="rounded-2xl border border-line bg-white px-4">
           {(matches ?? []).map((m) => {
