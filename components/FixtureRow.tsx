@@ -3,6 +3,8 @@ import { Match } from "@/types/match";
 import { formatMatchDate } from "@/lib/format";
 
 export function FixtureRow({ match }: { match: Match }) {
+  const played = match.homeGoals != null && match.awayGoals != null;
+
   return (
     <div className="flex items-center gap-3 border-b border-line py-3 last:border-b-0">
       <span
@@ -19,14 +21,16 @@ export function FixtureRow({ match }: { match: Match }) {
           {match.featured ? " · 🔥" : ""}
         </p>
         <p className="text-xs text-ink/50">
-          {formatMatchDate(match.date)} · {match.home ? "Casa" : "Fora"}
+          {played
+            ? `${match.homeGoals}-${match.awayGoals}`
+            : `${formatMatchDate(match.date)} · ${match.home ? "Casa" : "Fora"}`}
         </p>
       </div>
       <Link
-        href={`/prever?jornada=${match.id}`}
+        href={played ? `/jogos/${match.code}` : `/prever?jornada=${match.code}`}
         className="shrink-0 rounded-lg bg-blue/10 px-3 py-2 text-xs font-semibold text-blue"
       >
-        Prever
+        {played ? "Ver jogo" : "Prever"}
       </Link>
     </div>
   );

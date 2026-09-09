@@ -10,7 +10,7 @@ export function MatchCard({ match, showPredictLink = true }: { match: Match; sho
   return (
     <div className="rounded-2xl border border-line bg-white p-4">
       <p className="text-xs font-medium text-blue">
-        {match.id.replace("J", "Jornada ")} {match.featured ? "· 🔥" : ""}
+        {match.code.replace("J", "Jornada ")} {match.featured ? "· 🔥" : ""}
       </p>
       <h3 className="mt-1 font-display text-lg font-semibold text-ink">
         {homeTeam} vs {awayTeam}
@@ -20,7 +20,7 @@ export function MatchCard({ match, showPredictLink = true }: { match: Match; sho
       </p>
       {showPredictLink && (
         <Link
-          href={`/prever?jornada=${match.id}`}
+          href={`/prever?jornada=${match.code}`}
           className="mt-3 block rounded-xl bg-blue py-2.5 text-center text-sm font-semibold text-white"
         >
           Fazer previsão

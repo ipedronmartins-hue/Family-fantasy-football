@@ -3,19 +3,63 @@
 import { useState } from "react";
 import { Player } from "@/types/player";
 import { Match } from "@/types/match";
+import { createBrowserSupabase } from "@/lib/supabase/client";
 
-export function PredictionForm({ match, players }: { match: Match; players: Player[] }) {
-  const [outcome, setOutcome] = useState<"home" | "draw" | "away">("home");
-  const [goalsHome, setGoalsHome] = useState("");
-  const [goalsAway, setGoalsAway] = useState("");
-  const [scorer, setScorer] = useState("");
-  const [assist, setAssist] = useState("");
-  const [mvp, setMvp] = useState("");
-  const [saved, setSaved] = useState(false);
+interface InitialPrediction {
+  outcome: "home" | "draw" | "away";
+  goalsHome: string;
+  goalsAway: string;
+  scorer: string;
+  assist: string;
+  mvp: string;
+}
+
+export function PredictionForm({
+  match,
+  players,
+  fantasyTeamId,
+  initial,
+}: {
+  match: Match;
+  players: Player[];
+  fantasyTeamId: string;
+  initial: InitialPrediction | null;
+}) {
+  const [outcome, setOutcome] = useState<"home" | "draw" | "away">(initial?.outcome ?? "home");
+  const [goalsHome, setGoalsHome] = useState(initial?.goalsHome ?? "");
+  const [goalsAway, setGoalsAway] = useState(initial?.goalsAway ?? "");
+  const [scorer, setScorer] = useState(initial?.scorer ?? "");
+  const [assist, setAssist] = useState(initial?.assist ?? "");
+  const [mvp, setMvp] = useState(initial?.mvp ?? "");
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
   const attackers = players.filter((p) => p.positionGroup === "EXT" || p.positionGroup === "AV");
   const homeLabel = match.home ? "Gondomar SC" : match.opponent;
   const awayLabel = match.home ? match.opponent : "Gondomar SC";
+
+  async function handleSave() {
+    setSaving(true);
+    setMessage(null);
+    const supabase = createBrowserSupabase();
+
+    const { error } = await supabase.from("predictions").upsert(
+      {
+        fantasy_team_id: fantasyTeamId,
+        match_id: match.id,
+        predicted_home_goals: goalsHome === "" ? null : Number(goalsHome),
+        predicted_away_goals: goalsAway === "" ? null : Number(goalsAway),
+        predicted_scorer_id: scorer || null,
+        predicted_assist_id: assist || null,
+        predicted_mvp_id: mvp || null,
+        submitted_at: new Date().toISOString(),
+      },
+      { onConflict: "fantasy_team_id,match_id" }
+    );
+
+    setSaving(false);
+    setMessage(error ? error.message : "Previsão guardada.");
+  }
 
   return (
     <div className="rounded-2xl border border-line bg-white p-4">
@@ -96,16 +140,13 @@ export function PredictionForm({ match, players }: { match: Match; players: Play
       </select>
 
       <button
-        onClick={() => setSaved(true)}
-        className="w-full rounded-xl bg-blue py-3 text-sm font-semibold text-white"
+        onClick={handleSave}
+        disabled={saving}
+        className="w-full rounded-xl bg-blue py-3 text-sm font-semibold text-white disabled:opacity-60"
       >
-        Confirmar previsão
+        {saving ? "A guardar…" : "Confirmar previsão"}
       </button>
-      {saved && (
-        <p className="mt-3 text-center text-xs text-blue">
-          Previsão registada nesta sessão — a gravação definitiva chega com as contas dos pais.
-        </p>
-      )}
+      {message && <p className="mt-3 text-center text-xs text-blue">{message}</p>}
     </div>
   );
 }

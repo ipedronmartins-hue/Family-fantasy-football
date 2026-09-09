@@ -2,30 +2,38 @@ import { supabase, CURRENT_SEASON_ID } from "@/lib/supabaseClient";
 import { Match } from "@/types/match";
 
 interface MatchRow {
+  id: string;
   matchday: number;
   opponent: string;
   competition: string | null;
   kickoff_at: string;
   home: boolean;
   featured: boolean;
+  home_goals: number | null;
+  away_goals: number | null;
 }
+
+const SELECT = "id, matchday, opponent, competition, kickoff_at, home, featured, home_goals, away_goals";
 
 function mapRow(row: MatchRow): Match {
   return {
-    id: `J${row.matchday}`,
+    id: row.id,
+    code: `J${row.matchday}`,
     matchday: row.matchday,
     opponent: row.opponent,
     date: row.kickoff_at.slice(0, 10),
     home: row.home,
     competition: row.competition ?? "",
     featured: row.featured,
+    homeGoals: row.home_goals,
+    awayGoals: row.away_goals,
   };
 }
 
 export async function getFixtures(): Promise<Match[]> {
   const { data, error } = await supabase
     .from("matches")
-    .select("matchday, opponent, competition, kickoff_at, home, featured")
+    .select(SELECT)
     .eq("season_id", CURRENT_SEASON_ID)
     .order("matchday");
 
@@ -36,7 +44,7 @@ export async function getFixtures(): Promise<Match[]> {
 export async function getNextFixture(referenceDate: Date = new Date()): Promise<Match> {
   const { data, error } = await supabase
     .from("matches")
-    .select("matchday, opponent, competition, kickoff_at, home, featured")
+    .select(SELECT)
     .eq("season_id", CURRENT_SEASON_ID)
     .gte("kickoff_at", referenceDate.toISOString())
     .order("kickoff_at")
@@ -51,15 +59,16 @@ export async function getNextFixture(referenceDate: Date = new Date()): Promise<
   return all[all.length - 1];
 }
 
-export async function getFixtureById(id: string): Promise<Match | undefined> {
-  const matchday = Number(id.replace("J", ""));
+/** `code` is the "J9"-style label used in URLs, not the database id. */
+export async function getFixtureByCode(code: string): Promise<Match | undefined> {
+  const matchday = Number(code.replace("J", ""));
   const { data, error } = await supabase
     .from("matches")
-    .select("matchday, opponent, competition, kickoff_at, home, featured")
+    .select(SELECT)
     .eq("season_id", CURRENT_SEASON_ID)
     .eq("matchday", matchday)
     .maybeSingle();
 
-  if (error) throw new Error(`Failed to load fixture ${id}: ${error.message}`);
+  if (error) throw new Error(`Failed to load fixture ${code}: ${error.message}`);
   return data ? mapRow(data as MatchRow) : undefined;
 }

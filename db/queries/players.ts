@@ -2,6 +2,7 @@ import { supabase, CURRENT_SEASON_ID } from "@/lib/supabaseClient";
 import { Player, PositionGroup } from "@/types/player";
 
 interface PlayerRow {
+  id: string;
   external_id: string;
   name: string;
   shirt_number: number;
@@ -14,7 +15,7 @@ interface PlayerRow {
 
 function mapRow(row: PlayerRow): Player {
   return {
-    id: row.external_id,
+    id: row.id,
     number: row.shirt_number,
     name: row.name,
     positionGroup: row.position_group,
@@ -28,7 +29,7 @@ function mapRow(row: PlayerRow): Player {
 export async function getRoster(): Promise<Player[]> {
   const { data, error } = await supabase
     .from("players")
-    .select("external_id, name, shirt_number, position_group, position_label, traits, ytb_athlete_id, rating")
+    .select("id, external_id, name, shirt_number, position_group, position_label, traits, ytb_athlete_id, rating")
     .eq("season_id", CURRENT_SEASON_ID)
     .order("shirt_number");
 

@@ -42,37 +42,3 @@ export const FORMATIONS: Record<FormationId, FormationSlot[]> = {
     { group: "AV", left: 65, bottom: 72 },
   ],
 };
-
-/**
- * Default starting XI per formation, as player ids from db/seed/roster.ts.
- * This is a suggested lineup for the pilot squad, not a rule — parents will
- * eventually pick their own XI here (V2). Order matches FORMATIONS[id].
- */
-export const DEFAULT_LINEUPS: Record<FormationId, string[]> = {
-  "4-3-3": [
-    "ENZO",
-    "NANDO",
-    "JOAO-NORONHA",
-    "MANAU",
-    "FERNANDES",
-    "SANTIAGO",
-    "VASCO-COUTINHO",
-    "ZE-PEDRO",
-    "MATEUS",
-    "BARBOSA",
-    "EDU",
-  ],
-  "4-4-2": [
-    "ENZO",
-    "NANDO",
-    "JOAO-NORONHA",
-    "MANAU",
-    "FERNANDES",
-    "SANTIAGO",
-    "VASCO-COUTINHO",
-    "SALVADOR",
-    "ZE-PEDRO",
-    "BARBOSA",
-    "TOMAS",
-  ],
-};

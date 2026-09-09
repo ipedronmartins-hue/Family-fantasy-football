@@ -1,4 +1,23 @@
-export default function ClassificacaoPage() {
+import { supabase, CURRENT_SEASON_ID } from "@/lib/supabaseClient";
+
+export const dynamic = "force-dynamic";
+
+interface LeaderboardRow {
+  fantasy_team_id: string;
+  team_name: string;
+  total_points: number;
+}
+
+export default async function ClassificacaoPage() {
+  const { data, error } = await supabase
+    .from("season_leaderboard")
+    .select("fantasy_team_id, team_name, total_points")
+    .eq("season_id", CURRENT_SEASON_ID)
+    .order("total_points", { ascending: false });
+
+  const standings = (data as LeaderboardRow[] | null) ?? [];
+  const leader = standings[0];
+
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col pb-20">
       <header className="bg-blue px-5 pb-6 pt-8 text-white">
@@ -7,12 +26,41 @@ export default function ClassificacaoPage() {
       </header>
 
       <main className="flex-1 px-5 pt-6">
-        <div className="rounded-2xl border border-line bg-white p-6 text-center">
-          <p className="text-sm text-ink/60">
-            Ainda não há classificação. Fica disponível assim que as contas dos pais
-            existirem e as previsões começarem a valer pontos.
-          </p>
-        </div>
+        {error && (
+          <p className="text-center text-sm text-red">Não foi possível carregar a classificação.</p>
+        )}
+
+        {!error && standings.length === 0 && (
+          <div className="rounded-2xl border border-line bg-white p-6 text-center">
+            <p className="text-sm text-ink/60">
+              Ainda não há classificação. Fica disponível assim que houver equipas Fantasy
+              criadas e previsões pontuadas.
+            </p>
+          </div>
+        )}
+
+        {leader && (
+          <div className="mb-4 rounded-2xl border border-line bg-white p-4">
+            <p className="text-xs font-semibold text-ink/60">LÍDER</p>
+            <h2 className="mt-1 font-display text-xl font-semibold text-ink">{leader.team_name}</h2>
+            <p className="mt-1 font-display text-4xl font-bold text-blue">{leader.total_points} pts</p>
+          </div>
+        )}
+
+        {standings.length > 0 && (
+          <ul className="rounded-2xl border border-line bg-white px-4">
+            {standings.map((entry, i) => (
+              <li
+                key={entry.fantasy_team_id}
+                className="grid grid-cols-[28px_1fr_auto] items-center gap-2 border-b border-line py-3 text-sm last:border-b-0"
+              >
+                <span className="font-display font-semibold text-ink/50">{i + 1}</span>
+                <span className="text-ink">{entry.team_name}</span>
+                <span className="font-display font-semibold text-blue">{entry.total_points}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </main>
     </div>
   );

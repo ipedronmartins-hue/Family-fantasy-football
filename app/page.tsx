@@ -1,15 +1,17 @@
 import Link from "next/link";
 import { getNextFixture, getFixtures } from "@/db/queries/fixtures";
 import { getRoster } from "@/db/queries/players";
+import { getCurrentParent } from "@/lib/auth";
 import { MatchCard } from "@/components/MatchCard";
 
 export const dynamic = "force-dynamic";
 
 export default async function InicioPage() {
-  const [nextMatch, fixtures, roster] = await Promise.all([
+  const [nextMatch, fixtures, roster, parent] = await Promise.all([
     getNextFixture(),
     getFixtures(),
     getRoster(),
+    getCurrentParent(),
   ]);
 
   return (
@@ -23,17 +25,33 @@ export default async function InicioPage() {
       <main className="flex-1 space-y-4 px-5 pt-6">
         <div>
           <p className="mb-2 text-xs font-semibold text-ink/60">
-            PRÓXIMO JOGO · {nextMatch.id.replace("J", "JORNADA ")}
+            PRÓXIMO JOGO · {nextMatch.code.replace("J", "JORNADA ")}
           </p>
           <MatchCard match={nextMatch} />
         </div>
 
         <div className="rounded-2xl border border-line bg-white p-4">
-          <p className="text-xs font-semibold text-ink/60">A TUA FANTASY</p>
-          <p className="mt-2 text-sm text-ink/60">
-            Ainda sem conta ligada — a tua equipa Fantasy aparece aqui assim que os pais
-            puderem entrar.
-          </p>
+          {parent && parent !== "onboarding" ? (
+            <>
+              <p className="text-xs font-semibold text-ink/60">A TUA FANTASY</p>
+              <p className="mt-1 font-display text-xl font-semibold text-ink">
+                {parent.fantasyTeamName}
+              </p>
+              <Link href="/equipa" className="mt-2 inline-block text-sm font-semibold text-blue">
+                Gerir a minha equipa →
+              </Link>
+            </>
+          ) : (
+            <>
+              <p className="text-xs font-semibold text-ink/60">A TUA FANTASY</p>
+              <p className="mt-2 text-sm text-ink/60">
+                Ainda sem conta — entra para criares a tua equipa Fantasy.
+              </p>
+              <Link href="/login" className="mt-2 inline-block text-sm font-semibold text-blue">
+                Entrar →
+              </Link>
+            </>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -53,6 +71,22 @@ export default async function InicioPage() {
         >
           Ver plantel completo →
         </Link>
+
+        <Link
+          href="/fundo"
+          className="block rounded-2xl border border-line bg-white p-4 text-center text-sm font-semibold text-blue"
+        >
+          💰 Fundo da Equipa →
+        </Link>
+
+        {parent && parent !== "onboarding" && parent.isAdmin && (
+          <Link
+            href="/admin"
+            className="block rounded-2xl border border-gold bg-gold/10 p-4 text-center text-sm font-semibold text-ink"
+          >
+            ⚙️ Administração →
+          </Link>
+        )}
       </main>
     </div>
   );
