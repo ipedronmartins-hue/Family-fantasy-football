@@ -8,20 +8,28 @@ const CATEGORY_LABELS: Record<string, string> = {
   torneios: "Torneios",
   inscricoes: "Inscrições",
   material: "Material",
+  servidor: "Servidor (alojamento da plataforma)",
   outros: "Outros",
 };
 
 export default async function FundoPage() {
-  const { data } = await supabase
-    .from("team_fund_entries")
-    .select("category, amount, entry_type, description, created_at")
-    .eq("season_id", CURRENT_SEASON_ID)
-    .order("created_at", { ascending: false });
+  const [{ data }, { data: payments }] = await Promise.all([
+    supabase
+      .from("team_fund_entries")
+      .select("category, amount, entry_type, description, created_at")
+      .eq("season_id", CURRENT_SEASON_ID)
+      .order("created_at", { ascending: false }),
+    supabase.from("family_payments").select("amount").eq("season_id", CURRENT_SEASON_ID),
+  ]);
 
   const entries = data ?? [];
   const receitas = entries.filter((e) => e.entry_type === "receita").reduce((s, e) => s + e.amount, 0);
   const despesas = entries.filter((e) => e.entry_type === "despesa").reduce((s, e) => s + e.amount, 0);
   const saldo = receitas - despesas;
+
+  const quotaCount = payments?.length ?? 0;
+  const quotaTotal = (payments ?? []).reduce((s, p) => s + p.amount, 0);
+  const outrasEntradas = receitas - quotaTotal;
 
   const byCategory = entries
     .filter((e) => e.entry_type === "despesa")
@@ -43,34 +51,46 @@ export default async function FundoPage() {
           <p className="mt-1 font-display text-4xl font-bold text-blue">{saldo.toFixed(2)} €</p>
         </div>
 
-        <div className="mb-4 grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-line bg-white p-4 text-center">
-            <p className="font-display text-xl font-bold text-ink">{receitas.toFixed(2)} €</p>
-            <p className="text-xs text-ink/60">receitas</p>
-          </div>
-          <div className="rounded-2xl border border-line bg-white p-4 text-center">
-            <p className="font-display text-xl font-bold text-ink">{despesas.toFixed(2)} €</p>
-            <p className="text-xs text-ink/60">despesas</p>
-          </div>
+        <div className="mb-4 rounded-2xl border border-line bg-white p-4">
+          <p className="mb-2 text-xs font-semibold text-ink/60">ENTRADAS</p>
+          {quotaCount > 0 ? (
+            <p className="text-sm text-ink">
+              {quotaCount} {quotaCount === 1 ? "contributo" : "contributos"} × 5 € ={" "}
+              <span className="font-semibold">{quotaTotal.toFixed(2)} €</span>
+            </p>
+          ) : (
+            <p className="text-sm text-ink/50">Ainda sem contributos registados.</p>
+          )}
+          {outrasEntradas > 0 && (
+            <p className="mt-1 text-sm text-ink/70">
+              + outras entradas: <span className="font-semibold">{outrasEntradas.toFixed(2)} €</span>
+            </p>
+          )}
         </div>
 
-        {entries.length === 0 ? (
-          <div className="rounded-2xl border border-line bg-white p-6 text-center text-sm text-ink/60">
-            Ainda não há movimentos registados no fundo da equipa.
-          </div>
-        ) : (
-          <ul className="rounded-2xl border border-line bg-white px-4">
-            {Object.entries(byCategory).map(([category, amount]) => (
-              <li
-                key={category}
-                className="flex items-center justify-between border-b border-line py-2.5 text-sm last:border-b-0"
-              >
-                <span className="text-ink">{CATEGORY_LABELS[category] ?? category}</span>
-                <span className="font-semibold text-ink">-{amount.toFixed(2)} €</span>
-              </li>
-            ))}
-          </ul>
-        )}
+        <div className="mb-4 rounded-2xl border border-line bg-white p-4">
+          <p className="mb-2 text-xs font-semibold text-ink/60">DESPESAS</p>
+          {Object.keys(byCategory).length === 0 ? (
+            <p className="text-sm text-ink/50">Ainda sem despesas registadas.</p>
+          ) : (
+            <ul>
+              {Object.entries(byCategory).map(([category, amount]) => (
+                <li
+                  key={category}
+                  className="flex items-center justify-between border-b border-line py-2 text-sm last:border-b-0"
+                >
+                  <span className="text-ink">{CATEGORY_LABELS[category] ?? category}</span>
+                  <span className="font-semibold text-ink">-{amount.toFixed(2)} €</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <p className="text-center text-xs text-ink/40">
+          Os valores apresentados correspondem às contribuições e despesas registadas pela
+          organização da equipa.
+        </p>
       </main>
     </div>
   );

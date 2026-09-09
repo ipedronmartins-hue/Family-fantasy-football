@@ -15,7 +15,9 @@ export default async function ClassificacaoPage() {
     .eq("season_id", CURRENT_SEASON_ID)
     .order("total_points", { ascending: false });
 
-  const standings = (data as LeaderboardRow[] | null) ?? [];
+  const rawStandings = (data as LeaderboardRow[] | null) ?? [];
+  const hasRealPoints = rawStandings.some((s) => s.total_points > 0);
+  const standings = hasRealPoints ? rawStandings : [];
   const leader = standings[0];
 
   return (
@@ -33,8 +35,9 @@ export default async function ClassificacaoPage() {
         {!error && standings.length === 0 && (
           <div className="rounded-2xl border border-line bg-white p-6 text-center">
             <p className="text-sm text-ink/60">
-              Ainda não há classificação. Fica disponível assim que houver equipas Fantasy
-              criadas e previsões pontuadas.
+              Ainda ninguém pontuou.
+              <br />
+              Sê o primeiro Mister da Bancada a entrar no ranking.
             </p>
           </div>
         )}

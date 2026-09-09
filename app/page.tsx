@@ -18,12 +18,14 @@ const HOW_IT_WORKS = [
 const FUND_ITEMS = [
   "⚽ bolas e material de treino",
   "🎒 porta-garrafas e outro material necessário",
-  "🍎 fruta, sumos ou chá e bolachas nos dias mais frios",
+  "🍎 fruta, água/sumos e, nos dias mais frios, chá e bolachas",
   "🏆 inscrições da equipa técnica em torneios",
   "🚌 despesas e apoio a deslocações realizadas em benefício da equipa",
   "🚗 plafond de apoio para quem disponibiliza a sua viatura",
   "🤝 apoio pontual e discreto a famílias que possam necessitar",
 ];
+
+const DASHBOARD_FUND_ITEMS = ["🍎 Lanches", "⚽ Material", "🏆 Torneios", "🚌 Deslocações", "🤝 Apoio à equipa"];
 
 export default async function InicioPage() {
   const [nextMatch, fixtures, parent] = await Promise.all([
@@ -64,8 +66,8 @@ export default async function InicioPage() {
       : Promise.resolve({ data: null }),
   ]);
 
-  const monthlyLeader = monthly?.[0];
-  const podium = season ?? [];
+  const monthlyLeader = monthly?.[0] && monthly[0].points > 0 ? monthly[0] : undefined;
+  const podium = (season ?? []).some((s) => s.total_points > 0) ? season ?? [] : [];
   const quotaPaid = !!quotaResult.data;
 
   return (
@@ -100,11 +102,24 @@ export default async function InicioPage() {
         </Link>
 
         {hasTeam && (
-          <p className="mb-8 mt-2 text-center text-xs text-ink/60">
-            Quota deste mês: {quotaPaid ? "paga ✅" : "por pagar ⏳"}
+          <p className="mb-4 mt-2 text-center text-xs text-ink/60">
+            Contributo deste mês: {quotaPaid ? "regularizado ✅" : "por regularizar ⏳"}
           </p>
         )}
-        {!hasTeam && <div className="mb-8" />}
+        {!hasTeam && <div className="mb-4" />}
+
+        <div className="mb-8 rounded-2xl border border-line bg-white p-4">
+          <p className="text-xs font-semibold text-blue">💙 PARA ONDE VAI O TEU CONTRIBUTO?</p>
+          <p className="mt-1 text-xs text-ink/60">5 €/mês por família</p>
+          <ul className="mt-2 space-y-1 text-sm text-ink/80">
+            {DASHBOARD_FUND_ITEMS.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+          <Link href="/fundo" className="mt-3 block text-center text-sm font-semibold text-blue">
+            Ver Fundo da Equipa →
+          </Link>
+        </div>
 
         <ScrollReveal>
           <section id="como-funciona" className="mb-8 scroll-mt-6">
@@ -147,9 +162,10 @@ export default async function InicioPage() {
           <section className="mb-8 rounded-2xl border border-line bg-white p-5">
             <p className="text-xs font-semibold text-ink/60">E NO FINAL DA ÉPOCA…</p>
             <p className="mt-2 text-sm text-ink/70">
-              Os três melhores classificados do ranking geral serão distinguidos — os prémios
-              poderão incluir merchandising do clube, equipamento ou material desportivo para
-              os filhos dos três primeiros classificados.
+              Os três melhores classificados do ranking geral serão distinguidos no final da
+              época. Os prémios poderão incluir merchandising do clube, equipamento ou material
+              desportivo para os seus filhos. Os prémios serão definidos de acordo com o que for
+              possível proporcionar no final da época.
             </p>
             {podium.length > 0 ? (
               <div className="mt-3 space-y-2">
@@ -205,8 +221,8 @@ export default async function InicioPage() {
             <p className="mt-2 text-sm text-white/80">
               Os miúdos têm o campeonato deles. Nós temos o nosso. Durante 30 jornadas vamos
               escolher, prever, acertar, falhar, ganhar pontos e tentar chegar ao topo. No
-              final, haverá um campeão — mas o verdadeiro objetivo é que esta seja uma época
-              ainda melhor para todos os nossos miúdos.
+              final, haverá um campeão. Mas o verdadeiro objetivo é outro: que todos
+              contribuamos para tornar esta época ainda melhor para os nossos miúdos.
             </p>
             <p className="mt-3 font-display text-sm font-semibold">
               Estás pronto para ser o Mister da Bancada?
