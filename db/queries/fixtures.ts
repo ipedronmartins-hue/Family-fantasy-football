@@ -35,7 +35,7 @@ export async function getFixtures(): Promise<Match[]> {
     .from("matches")
     .select(SELECT)
     .eq("season_id", CURRENT_SEASON_ID)
-    .order("matchday");
+    .order("kickoff_at");
 
   if (error) throw new Error(`Failed to load fixtures: ${error.message}`);
   return (data as MatchRow[]).map(mapRow);

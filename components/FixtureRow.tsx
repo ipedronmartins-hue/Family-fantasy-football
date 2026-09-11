@@ -4,15 +4,16 @@ import { formatMatchDate } from "@/lib/format";
 
 export function FixtureRow({ match }: { match: Match }) {
   const played = match.homeGoals != null && match.awayGoals != null;
+  const friendly = match.competition === "Amigável";
 
   return (
     <div className="flex items-center gap-3 border-b border-line py-3 last:border-b-0">
       <span
         className={`shrink-0 rounded-lg px-2.5 py-2 text-xs font-semibold ${
-          match.featured ? "bg-red/10 text-red" : "bg-gold/20 text-ink"
+          match.featured ? "bg-red/10 text-red" : friendly ? "bg-blue/10 text-blue" : "bg-gold/20 text-ink"
         }`}
       >
-        {match.matchday}
+        {friendly ? "Ami." : match.matchday}
       </span>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-ink">

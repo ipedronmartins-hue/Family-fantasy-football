@@ -19,7 +19,7 @@ export default async function AdminPage() {
     .from("matches")
     .select("id, matchday, opponent, home, kickoff_at, home_goals, away_goals, locked_at")
     .eq("season_id", CURRENT_SEASON_ID)
-    .order("matchday");
+    .order("kickoff_at");
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col pb-20">
@@ -44,6 +44,13 @@ export default async function AdminPage() {
           className="mb-4 block rounded-2xl border border-line bg-white p-4 text-center text-sm font-semibold text-blue"
         >
           🎯 Regras de pontuação →
+        </Link>
+
+        <Link
+          href="/admin/novo-jogo"
+          className="mb-4 block rounded-2xl border border-blue bg-blue/5 p-4 text-center text-sm font-semibold text-blue"
+        >
+          ➕ Adicionar jogo amigável →
         </Link>
 
         <ul className="rounded-2xl border border-line bg-white px-4">

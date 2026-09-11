@@ -89,7 +89,8 @@ export default async function InicioPage() {
       <main className="flex-1 px-5 pt-6">
         <div className="mb-4">
           <p className="mb-2 text-xs font-semibold text-ink/60">
-            PRÓXIMO JOGO · {nextMatch.code.replace("J", "JORNADA ")}
+            PRÓXIMO JOGO ·{" "}
+            {nextMatch.competition === "Amigável" ? "AMIGÁVEL" : nextMatch.code.replace("J", "JORNADA ")}
           </p>
           <MatchCard match={nextMatch} />
         </div>

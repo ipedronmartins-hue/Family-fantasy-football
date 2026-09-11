@@ -10,7 +10,8 @@ export function MatchCard({ match, showPredictLink = true }: { match: Match; sho
   return (
     <div className="rounded-2xl border border-line bg-white p-4">
       <p className="text-xs font-medium text-blue">
-        {match.code.replace("J", "Jornada ")} {match.featured ? "· 🔥" : ""}
+        {match.competition === "Amigável" ? "Jogo Amigável" : match.code.replace("J", "Jornada ")}{" "}
+        {match.featured ? "· 🔥" : ""}
       </p>
       <h3 className="mt-1 font-display text-lg font-semibold text-ink">
         {homeTeam} vs {awayTeam}
