@@ -47,7 +47,7 @@ export function NewPlayerForm({ nextNumber }: { nextNumber: number }) {
       setMessage(error.message);
       return;
     }
-    router.push("/plantel");
+    router.push("/gondomar/plantel");
     router.refresh();
   }
 

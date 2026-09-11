@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Oswald, Work_Sans } from "next/font/google";
-import { BottomNav } from "@/components/BottomNav";
 import "./globals.css";
 
 // Supabase project lives in eu-west-1 (Ireland) -- run Vercel's functions in
@@ -31,7 +30,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col font-sans">
         {children}
-        <BottomNav />
       </body>
     </html>
   );

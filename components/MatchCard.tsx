@@ -21,7 +21,7 @@ export function MatchCard({ match, showPredictLink = true }: { match: Match; sho
       </p>
       {showPredictLink && (
         <Link
-          href={`/prever?jornada=${match.code}`}
+          href={`/gondomar/prever?jornada=${match.code}`}
           className="mt-3 block rounded-xl bg-blue py-2.5 text-center text-sm font-semibold text-white"
         >
           Fazer previsão

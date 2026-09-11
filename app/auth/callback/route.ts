@@ -20,7 +20,7 @@ export async function GET(request: Request) {
           .eq("id", user.id)
           .maybeSingle();
 
-        return NextResponse.redirect(`${origin}${parent ? "/" : "/onboarding"}`);
+        return NextResponse.redirect(`${origin}${parent ? "/gondomar" : "/gondomar/onboarding"}`);
       }
     }
   }

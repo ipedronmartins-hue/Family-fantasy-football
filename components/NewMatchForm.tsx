@@ -35,7 +35,7 @@ export function NewMatchForm({ nextMatchday }: { nextMatchday: number }) {
       setMessage(error.message);
       return;
     }
-    router.push("/admin");
+    router.push("/gondomar/admin");
     router.refresh();
   }
 

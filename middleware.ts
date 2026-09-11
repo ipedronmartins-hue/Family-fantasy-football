@@ -10,8 +10,6 @@ const SUPABASE_ANON_KEY =
 // instead of a constant.
 const CURRENT_TEAM_ID = "00000000-0000-0000-0000-000000000002";
 
-const ALWAYS_ALLOWED = ["/login", "/auth/callback", "/bloqueado", "/registar-equipa", "/superadmin", "/sobre"];
-
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -36,7 +34,11 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  if (ALWAYS_ALLOWED.some((p) => pathname.startsWith(p))) {
+
+  // Blocking only applies to Gondomar's own area -- the institutional
+  // homepage, login, and team registration are platform-level, not
+  // owned by any one team, so they must stay reachable regardless.
+  if (!pathname.startsWith("/gondomar")) {
     return response;
   }
 

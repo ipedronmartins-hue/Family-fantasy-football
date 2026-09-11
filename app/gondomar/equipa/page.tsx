@@ -14,7 +14,7 @@ export default async function EquipaPage() {
     createServerSupabase(),
   ]);
   if (parent === null) redirect("/login");
-  if (parent === "onboarding") redirect("/onboarding");
+  if (parent === "onboarding") redirect("/gondomar/onboarding");
 
   const { data: lineup } = await supabase
     .from("fantasy_lineups")

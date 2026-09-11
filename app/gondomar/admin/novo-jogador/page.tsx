@@ -8,8 +8,8 @@ export const dynamic = "force-dynamic";
 export default async function NovoJogadorPage() {
   const parent = await getCurrentParent();
   if (parent === null) redirect("/login");
-  if (parent === "onboarding") redirect("/onboarding");
-  if (!parent.isAdmin) redirect("/");
+  if (parent === "onboarding") redirect("/gondomar/onboarding");
+  if (!parent.isAdmin) redirect("/gondomar");
 
   const roster = await getRoster();
   const nextNumber = roster.length > 0 ? Math.max(...roster.map((p) => p.number)) + 1 : 1;

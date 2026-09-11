@@ -11,8 +11,8 @@ export const dynamic = "force-dynamic";
 export default async function AdminPage() {
   const parent = await getCurrentParent();
   if (parent === null) redirect("/login");
-  if (parent === "onboarding") redirect("/onboarding");
-  if (!parent.isAdmin) redirect("/");
+  if (parent === "onboarding") redirect("/gondomar/onboarding");
+  if (!parent.isAdmin) redirect("/gondomar");
 
   const supabase = await createServerSupabase();
   const { data: matches } = await supabase
@@ -31,7 +31,7 @@ export default async function AdminPage() {
       <main className="flex-1 px-5 pt-6">
         <div className="mb-4 grid grid-cols-2 gap-2">
           <Link
-            href="/admin/pagamentos"
+            href="/gondomar/admin/pagamentos"
             className="block rounded-2xl border border-gold bg-gold/10 p-4 text-center text-sm font-semibold text-ink"
           >
             💳 Contributos do mês →
@@ -40,21 +40,21 @@ export default async function AdminPage() {
         </div>
 
         <Link
-          href="/admin/pontuacao"
+          href="/gondomar/admin/pontuacao"
           className="mb-4 block rounded-2xl border border-line bg-white p-4 text-center text-sm font-semibold text-blue"
         >
           🎯 Regras de pontuação →
         </Link>
 
         <Link
-          href="/admin/novo-jogo"
+          href="/gondomar/admin/novo-jogo"
           className="mb-4 block rounded-2xl border border-blue bg-blue/5 p-4 text-center text-sm font-semibold text-blue"
         >
           ➕ Adicionar jogo amigável →
         </Link>
 
         <Link
-          href="/admin/novo-jogador"
+          href="/gondomar/admin/novo-jogador"
           className="mb-4 block rounded-2xl border border-blue bg-blue/5 p-4 text-center text-sm font-semibold text-blue"
         >
           👤 Adicionar jogador →
@@ -66,7 +66,7 @@ export default async function AdminPage() {
             const locked = !!m.locked_at && new Date(m.locked_at) <= new Date();
             return (
               <li key={m.id} className="border-b border-line py-3 last:border-b-0">
-                <Link href={`/admin/J${m.matchday}`} className="flex items-center gap-3">
+                <Link href={`/gondomar/admin/J${m.matchday}`} className="flex items-center gap-3">
                   <span className="shrink-0 rounded-lg bg-gold/20 px-2.5 py-2 text-xs font-semibold text-ink">
                     {m.matchday}
                   </span>

@@ -9,8 +9,8 @@ export const dynamic = "force-dynamic";
 export default async function AdminPaymentsPage() {
   const parent = await getCurrentParent();
   if (parent === null) redirect("/login");
-  if (parent === "onboarding") redirect("/onboarding");
-  if (!parent.isAdmin) redirect("/");
+  if (parent === "onboarding") redirect("/gondomar/onboarding");
+  if (!parent.isAdmin) redirect("/gondomar");
 
   const monthStart = new Date();
   monthStart.setDate(1);

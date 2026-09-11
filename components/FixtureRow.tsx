@@ -28,7 +28,7 @@ export function FixtureRow({ match }: { match: Match }) {
         </p>
       </div>
       <Link
-        href={played ? `/jogos/${match.code}` : `/prever?jornada=${match.code}`}
+        href={played ? `/gondomar/jogos/${match.code}` : `/gondomar/prever?jornada=${match.code}`}
         className="shrink-0 rounded-lg bg-blue/10 px-3 py-2 text-xs font-semibold text-blue"
       >
         {played ? "Ver jogo" : "Prever"}

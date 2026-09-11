@@ -28,8 +28,8 @@ export default async function AdminMatchPage({
   ]);
 
   if (parent === null) redirect("/login");
-  if (parent === "onboarding") redirect("/onboarding");
-  if (!parent.isAdmin) redirect("/");
+  if (parent === "onboarding") redirect("/gondomar/onboarding");
+  if (!parent.isAdmin) redirect("/gondomar");
   if (!match) notFound();
 
   const [{ data: goals }, { data: realLineup }, { count: totalTeams }, { count: submittedCount }] =

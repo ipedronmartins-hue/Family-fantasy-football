@@ -29,7 +29,7 @@ export default async function MatchSummaryPage({
 
   if (!match) notFound();
   if (parent === null) redirect("/login");
-  if (parent === "onboarding") redirect("/onboarding");
+  if (parent === "onboarding") redirect("/gondomar/onboarding");
 
   const mvpQuery = match.man_of_the_match_id
     ? publicSupabase.from("players").select("name").eq("id", match.man_of_the_match_id).maybeSingle()

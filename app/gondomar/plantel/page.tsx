@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export default async function PlantelPage() {
   const parent = await getCurrentParent();
   if (parent === null) redirect("/login");
-  if (parent === "onboarding") redirect("/onboarding");
+  if (parent === "onboarding") redirect("/gondomar/onboarding");
 
   const roster = await getRoster();
   const sections = groupRosterByPosition(roster);

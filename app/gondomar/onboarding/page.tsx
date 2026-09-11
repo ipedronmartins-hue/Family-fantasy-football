@@ -51,7 +51,7 @@ export default function OnboardingPage() {
       return;
     }
 
-    router.push("/");
+    router.push("/gondomar");
     router.refresh();
   }
 

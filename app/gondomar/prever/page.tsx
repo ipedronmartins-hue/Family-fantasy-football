@@ -16,7 +16,7 @@ export default async function PreverPage({
 }) {
   const [parent, { jornada }] = await Promise.all([getCurrentParent(), searchParams]);
   if (parent === null) redirect("/login");
-  if (parent === "onboarding") redirect("/onboarding");
+  if (parent === "onboarding") redirect("/gondomar/onboarding");
 
   const [match, roster] = await Promise.all([
     jornada ? (await getFixtureByCode(jornada)) ?? getNextFixture() : getNextFixture(),
@@ -71,7 +71,7 @@ export default async function PreverPage({
       </header>
 
       <main className="flex-1 px-5 pt-6">
-        <Link href="/pontuacao" className="mb-4 block text-center text-xs font-semibold text-blue">
+        <Link href="/gondomar/pontuacao" className="mb-4 block text-center text-xs font-semibold text-blue">
           Como se ganham pontos? →
         </Link>
 

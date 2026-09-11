@@ -44,7 +44,7 @@ export default function RegistarEquipaPage() {
         A tua equipa pode ter a sua própria versão do Family Fantasy Soccer, com o vosso
         plantel e calendário, por 20 €/mês.
       </p>
-      <a href="/sobre" className="mt-2 inline-block text-xs font-semibold text-blue">
+      <a href="/" className="mt-2 inline-block text-xs font-semibold text-blue">
         Porque criámos isto →
       </a>
 
