@@ -10,7 +10,7 @@ const SUPABASE_ANON_KEY =
 // instead of a constant.
 const CURRENT_TEAM_ID = "00000000-0000-0000-0000-000000000002";
 
-const ALWAYS_ALLOWED = ["/login", "/auth/callback", "/bloqueado", "/registar-equipa", "/superadmin"];
+const ALWAYS_ALLOWED = ["/login", "/auth/callback", "/bloqueado", "/registar-equipa", "/superadmin", "/sobre"];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });

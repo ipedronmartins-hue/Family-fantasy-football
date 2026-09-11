@@ -267,6 +267,10 @@ export default async function InicioPage() {
             🛠️ Super-Admin (plataforma) →
           </Link>
         )}
+
+        <Link href="/sobre" className="block pb-2 text-center text-xs text-ink/40">
+          Sobre a plataforma
+        </Link>
       </main>
     </div>
   );
