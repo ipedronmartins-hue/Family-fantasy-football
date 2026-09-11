@@ -15,7 +15,7 @@ export function FixedCostButton() {
     const { error } = await supabase.rpc("register_fixed_cost", {
       p_category: "servidor",
       p_description: `Alojamento da plataforma (Vercel + Supabase) · ${month}`,
-      p_amount: 15,
+      p_amount: 20,
     });
     setBusy(false);
     setMessage(error ? (error.message.includes("already registered") ? "Já registado este mês." : error.message) : "Registado.");
@@ -28,7 +28,7 @@ export function FixedCostButton() {
         disabled={busy}
         className="block w-full rounded-2xl border border-line bg-white p-4 text-center text-sm font-semibold text-ink disabled:opacity-50"
       >
-        🖥️ Servidor (15€/mês)
+        🖥️ Servidor (20€/mês)
       </button>
       {message && <p className="mt-1 text-center text-xs text-ink/50">{message}</p>}
     </div>

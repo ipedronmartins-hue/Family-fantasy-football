@@ -5,6 +5,7 @@ export interface CurrentParent {
   email: string | undefined;
   displayName: string;
   isAdmin: boolean;
+  isPlatformOwner: boolean;
   fantasyTeamId: string;
   fantasyTeamName: string;
   formation: string;
@@ -25,7 +26,7 @@ export async function getCurrentParent(): Promise<CurrentParent | null | "onboar
 
   const { data: parent } = await supabase
     .from("parents")
-    .select("display_name, is_admin")
+    .select("display_name, is_admin, is_platform_owner")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -44,6 +45,7 @@ export async function getCurrentParent(): Promise<CurrentParent | null | "onboar
     email: user.email,
     displayName: parent.display_name,
     isAdmin: parent.is_admin,
+    isPlatformOwner: parent.is_platform_owner,
     fantasyTeamId: team.id,
     fantasyTeamName: team.name,
     formation: team.formation,

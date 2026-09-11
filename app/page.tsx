@@ -257,6 +257,15 @@ export default async function InicioPage() {
             </Link>
           )}
         </div>
+
+        {hasTeam && parent.isPlatformOwner && (
+          <Link
+            href="/superadmin"
+            className="mb-4 block rounded-2xl border border-red bg-red/5 p-4 text-center text-sm font-semibold text-red"
+          >
+            🛠️ Super-Admin (plataforma) →
+          </Link>
+        )}
       </main>
     </div>
   );
