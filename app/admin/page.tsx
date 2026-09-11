@@ -53,6 +53,13 @@ export default async function AdminPage() {
           ➕ Adicionar jogo amigável →
         </Link>
 
+        <Link
+          href="/admin/novo-jogador"
+          className="mb-4 block rounded-2xl border border-blue bg-blue/5 p-4 text-center text-sm font-semibold text-blue"
+        >
+          👤 Adicionar jogador →
+        </Link>
+
         <ul className="rounded-2xl border border-line bg-white px-4">
           {(matches ?? []).map((m) => {
             const played = m.home_goals !== null && m.away_goals !== null;
