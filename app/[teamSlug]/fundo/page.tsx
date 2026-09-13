@@ -59,7 +59,7 @@ export default async function FundoPage({ params }: { params: Promise<{ teamSlug
           <p className="mb-2 text-xs font-semibold text-ink/60">ENTRADAS</p>
           {quotaCount > 0 ? (
             <p className="text-sm text-ink">
-              {quotaCount} {quotaCount === 1 ? "contributo" : "contributos"} × 5 € ={" "}
+              {quotaCount} {quotaCount === 1 ? "contributo" : "contributos"} ={" "}
               <span className="font-semibold">{quotaTotal.toFixed(2)} €</span>
             </p>
           ) : (

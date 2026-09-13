@@ -21,17 +21,25 @@ export function PaymentsClient({
   families: FamilyRow[];
 }) {
   const [rows, setRows] = useState(families);
+  const [amounts, setAmounts] = useState<Record<string, string>>(
+    Object.fromEntries(families.map((f) => [f.fantasyTeamId, "5"]))
+  );
   const [busyId, setBusyId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   async function markPaid(fantasyTeamId: string, method: "mbway" | "dinheiro") {
+    const amount = Number(amounts[fantasyTeamId] ?? "5");
+    if (!amount || amount <= 0) {
+      setMessage("Indica um valor válido.");
+      return;
+    }
     setBusyId(fantasyTeamId);
     setMessage(null);
     const supabase = createBrowserSupabase();
     const { error } = await supabase.rpc("register_family_payment", {
       p_fantasy_team_id: fantasyTeamId,
       p_month: month,
-      p_amount: 5,
+      p_amount: amount,
       p_method: method,
     });
     setBusyId(null);
@@ -40,7 +48,7 @@ export function PaymentsClient({
       return;
     }
     setRows((prev) =>
-      prev.map((r) => (r.fantasyTeamId === fantasyTeamId ? { ...r, paid: true, amount: 5, method } : r))
+      prev.map((r) => (r.fantasyTeamId === fantasyTeamId ? { ...r, paid: true, amount, method } : r))
     );
   }
 
@@ -63,7 +71,15 @@ export function PaymentsClient({
                 ✅ {row.amount} € · {METHOD_LABELS[row.method ?? ""] ?? row.method}
               </span>
             ) : (
-              <div className="flex gap-1.5">
+              <div className="flex items-center gap-1.5">
+                <input
+                  value={amounts[row.fantasyTeamId] ?? "5"}
+                  onChange={(e) =>
+                    setAmounts((prev) => ({ ...prev, [row.fantasyTeamId]: e.target.value }))
+                  }
+                  inputMode="decimal"
+                  className="w-12 rounded-lg border border-line px-1.5 py-1.5 text-center text-xs"
+                />
                 <button
                   onClick={() => markPaid(row.fantasyTeamId, "mbway")}
                   disabled={busyId === row.fantasyTeamId}

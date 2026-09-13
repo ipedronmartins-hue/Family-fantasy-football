@@ -154,7 +154,7 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
 
         <div className="mb-8 rounded-2xl border border-line bg-white p-4">
           <p className="text-xs font-semibold text-blue">💙 PARA ONDE VAI O TEU CONTRIBUTO?</p>
-          <p className="mt-1 text-xs text-ink/60">5 €/mês por família</p>
+          <p className="mt-1 text-xs text-ink/60">3 a 5 €/mês por família</p>
           <ul className="mt-2 space-y-1 text-sm text-ink/80">
             {DASHBOARD_FUND_ITEMS.map((item) => (
               <li key={item}>{item}</li>
@@ -235,7 +235,7 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
             <p className="mb-3 text-sm text-ink/70">
               O Family Fantasy Soccer foi criado para aproximar os pais da equipa — mas tem
               também um segundo objetivo: ajudar a nossa equipa. Pedimos a quem quiser
-              participar um contributo de <strong>5 € por mês / família</strong>, que ajuda a
+              participar um contributo de <strong>3 a 5 € por mês / família</strong>, que ajuda a
               suportar despesas do dia a dia, como:
             </p>
             <ul className="mb-3 space-y-1.5 rounded-2xl border border-line bg-white p-4 text-sm text-ink/80">
