@@ -30,6 +30,7 @@ export function NewPlayerForm({
   const [number, setNumber] = useState(String(nextNumber));
   const [positionGroup, setPositionGroup] = useState<PositionGroup>("MED");
   const [positionLabel, setPositionLabel] = useState("");
+  const [setPieces, setSetPieces] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -47,6 +48,7 @@ export function NewPlayerForm({
       position_group: positionGroup,
       position_label: positionLabel || POSITION_GROUP_LABELS[positionGroup],
       traits: [],
+      set_pieces: setPieces || null,
     });
 
     setSaving(false);
@@ -102,6 +104,16 @@ export function NewPlayerForm({
         value={positionLabel}
         onChange={(e) => setPositionLabel(e.target.value)}
         placeholder={POSITION_GROUP_LABELS[positionGroup]}
+        className="mb-4 w-full rounded-xl border border-line px-3 py-2"
+      />
+
+      <label className="mb-1.5 block text-xs font-semibold text-ink/70">
+        Bolas paradas (opcional, ex: "Grandes penalidades, livres")
+      </label>
+      <input
+        value={setPieces}
+        onChange={(e) => setSetPieces(e.target.value)}
+        placeholder="Deixa em branco se não bate nenhuma"
         className="mb-5 w-full rounded-xl border border-line px-3 py-2"
       />
 

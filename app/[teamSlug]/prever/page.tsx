@@ -6,6 +6,7 @@ import { getCurrentParent } from "@/lib/auth";
 import { getTeamBySlug } from "@/lib/team";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { formatMatchDate } from "@/lib/format";
+import { isPredictionLocked, DEADLINE_MINUTES_BEFORE_KICKOFF } from "@/lib/deadline";
 import { PredictionForm } from "@/components/PredictionForm";
 
 export const dynamic = "force-dynamic";
@@ -39,7 +40,7 @@ export default async function PreverPage({
       .eq("match_id", match.id)
       .maybeSingle(),
   ]);
-  const locked = !!matchRow?.locked_at && new Date(matchRow.locked_at) <= new Date();
+  const locked = isPredictionLocked(match.kickoffAt, matchRow?.locked_at ?? null);
 
   let initialLineup: string[] = [];
   if (existing) {
@@ -74,6 +75,9 @@ export default async function PreverPage({
         </h1>
         <p className="mt-2 text-sm text-white/80">
           {formatMatchDate(match.date)} · {match.home ? "Casa" : "Fora"}
+        </p>
+        <p className="mt-1 text-xs text-white/60">
+          Prazo para prever: {new Date(new Date(match.kickoffAt).getTime() - DEADLINE_MINUTES_BEFORE_KICKOFF * 60 * 1000).toLocaleString("pt-PT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
         </p>
       </header>
 

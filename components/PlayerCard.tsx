@@ -11,6 +11,9 @@ export function PlayerCard({ player }: { player: Player }) {
           {player.name}
         </p>
         <p className="text-sm text-ink/60">{player.positionLabel}</p>
+        {player.setPieces && (
+          <p className="mt-0.5 text-xs font-semibold text-gold">⚽ {player.setPieces}</p>
+        )}
         <ul className="mt-1.5 flex flex-wrap gap-1.5">
           {player.traits.map((trait) => (
             <li

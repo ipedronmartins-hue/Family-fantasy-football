@@ -21,6 +21,7 @@ export function AdminMatchForm({
   initialMvp,
   initialGoals,
   initialLocked,
+  kickoffAt,
   initialRealLineup,
   initialStatus,
   submittedCount,
@@ -33,6 +34,7 @@ export function AdminMatchForm({
   initialMvp: string | null;
   initialGoals: GoalRow[];
   initialLocked: boolean;
+  kickoffAt: string;
   initialRealLineup: string[];
   initialStatus: MatchStatus;
   submittedCount: number;
@@ -283,6 +285,16 @@ export function AdminMatchForm({
         </div>
         <p className="mb-3 text-xs text-ink/60">
           {submittedCount} de {totalTeams} equipas já submeteram previsão
+        </p>
+        <p className="mb-3 text-xs text-ink/40">
+          Fecham sempre automaticamente 90 min antes do jogo (
+          {new Date(new Date(kickoffAt).getTime() - 90 * 60 * 1000).toLocaleString("pt-PT", {
+            day: "2-digit",
+            month: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+          ). O botão abaixo só fecha mais cedo se precisares.
         </p>
         <button
           onClick={toggleLock}

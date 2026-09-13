@@ -165,6 +165,7 @@ export function PredictionForm({
         {attackers.map((p) => (
           <option key={p.id} value={p.id}>
             {p.name}
+            {p.setPieces ? ` ⚽ (${p.setPieces})` : ""}
           </option>
         ))}
       </select>

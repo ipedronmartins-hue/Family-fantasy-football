@@ -13,6 +13,8 @@ export interface Player {
   traits: string[];
   /** Optional rating, not used for Fantasy scoring in V1. */
   rating?: number;
+  /** Free text, e.g. "Grandes penalidades, livres" — a hint for parents guessing scorer/assist. */
+  setPieces?: string;
 }
 
 export const POSITION_GROUP_LABELS: Record<PositionGroup, string> = {

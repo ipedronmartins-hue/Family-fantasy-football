@@ -5,8 +5,10 @@ export interface Match {
   code: string;
   matchday: number;
   opponent: string;
-  /** ISO date (YYYY-MM-DD). */
+  /** ISO date (YYYY-MM-DD), for display. */
   date: string;
+  /** Full ISO timestamp, for deadline calculations. */
+  kickoffAt: string;
   home: boolean;
   competition: string;
   /** Marks a fixture parents will want to circle on the calendar (e.g. vs a big club). */

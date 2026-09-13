@@ -10,6 +10,7 @@ interface PlayerRow {
   position_label: string;
   traits: string[];
   rating: number | null;
+  set_pieces: string | null;
 }
 
 function mapRow(row: PlayerRow): Player {
@@ -21,13 +22,14 @@ function mapRow(row: PlayerRow): Player {
     positionLabel: row.position_label,
     traits: row.traits ?? [],
     rating: row.rating ?? undefined,
+    setPieces: row.set_pieces ?? undefined,
   };
 }
 
 export async function getRoster(seasonId: string): Promise<Player[]> {
   const { data, error } = await supabase
     .from("players")
-    .select("id, external_id, name, shirt_number, position_group, position_label, traits, rating")
+    .select("id, external_id, name, shirt_number, position_group, position_label, traits, rating, set_pieces")
     .eq("season_id", seasonId)
     .order("shirt_number");
 

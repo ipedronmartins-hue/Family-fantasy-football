@@ -23,6 +23,7 @@ function mapRow(row: MatchRow): Match {
     matchday: row.matchday,
     opponent: row.opponent,
     date: row.kickoff_at.slice(0, 10),
+    kickoffAt: row.kickoff_at,
     home: row.home,
     competition: row.competition ?? "",
     featured: row.featured,

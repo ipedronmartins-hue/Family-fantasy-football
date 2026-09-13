@@ -3,6 +3,7 @@ import { getCurrentParent } from "@/lib/auth";
 import { getTeamBySlug } from "@/lib/team";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getRoster } from "@/db/queries/players";
+import { isPredictionLocked } from "@/lib/deadline";
 import { AdminMatchForm } from "@/components/AdminMatchForm";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +26,7 @@ export default async function AdminMatchPage({
   const [{ data: match }, roster] = await Promise.all([
     supabase
       .from("matches")
-      .select("id, matchday, opponent, home, home_goals, away_goals, man_of_the_match_id, locked_at, status")
+      .select("id, matchday, opponent, home, kickoff_at, home_goals, away_goals, man_of_the_match_id, locked_at, status")
       .eq("season_id", team.seasonId)
       .eq("matchday", matchday)
       .maybeSingle(),
@@ -48,7 +49,7 @@ export default async function AdminMatchPage({
         .eq("match_id", match.id),
     ]);
 
-  const locked = !!match.locked_at && new Date(match.locked_at) <= new Date();
+  const locked = isPredictionLocked(match.kickoff_at, match.locked_at);
   const homeTeamName = `${team.clubName} ${team.teamName}`;
 
   return (
@@ -74,6 +75,7 @@ export default async function AdminMatchPage({
             assistId: g.assist_id,
           }))}
           initialLocked={locked}
+          kickoffAt={match.kickoff_at}
           initialRealLineup={(realLineup ?? []).map((l) => l.player_id)}
           initialStatus={match.status as "scheduled" | "live" | "finished"}
           submittedCount={submittedCount ?? 0}
