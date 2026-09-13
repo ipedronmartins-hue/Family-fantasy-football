@@ -22,6 +22,8 @@ function countsByGroup(formation: FormationId): Record<PositionGroup, number> {
 export function EquipaClient({
   roster,
   fantasyTeamId,
+  matchId,
+  locked,
   initialFormation,
   initialSelected,
   initialCaptain,
@@ -29,6 +31,8 @@ export function EquipaClient({
 }: {
   roster: Player[];
   fantasyTeamId: string;
+  matchId: string;
+  locked: boolean;
   initialFormation: FormationId;
   initialSelected: string[];
   initialCaptain: string | null;
@@ -95,7 +99,8 @@ export function EquipaClient({
     const { error: deleteError } = await supabase
       .from("fantasy_lineups")
       .delete()
-      .eq("fantasy_team_id", fantasyTeamId);
+      .eq("fantasy_team_id", fantasyTeamId)
+      .eq("match_id", matchId);
 
     if (deleteError) {
       setMessage(deleteError.message);
@@ -105,6 +110,7 @@ export function EquipaClient({
 
     const rows = Array.from(selected).map((playerId) => ({
       fantasy_team_id: fantasyTeamId,
+      match_id: matchId,
       player_id: playerId,
       is_captain: playerId === captain,
       is_vice_captain: playerId === viceCaptain,
@@ -123,11 +129,19 @@ export function EquipaClient({
       .eq("id", fantasyTeamId);
 
     setSaving(false);
-    setMessage(teamError ? teamError.message : "Equipa guardada.");
+    setMessage(teamError ? teamError.message : "Equipa guardada para esta jornada.");
   }
 
   const slotGroups = FORMATIONS[formation].map((s) => s.group);
   const previewLineup = assignPlayersToSlots(slotGroups, Array.from(selected), roster);
+
+  if (locked) {
+    return (
+      <div className="rounded-2xl border border-line bg-white p-4 text-center text-sm text-ink/60">
+        O prazo para esta jornada já fechou — a equipa ficou registada como estava.
+      </div>
+    );
+  }
 
   return (
     <>
@@ -228,7 +242,7 @@ export function EquipaClient({
         disabled={!complete || saving}
         className="w-full rounded-xl bg-blue py-3 text-sm font-semibold text-white disabled:opacity-40"
       >
-        {saving ? "A guardar…" : "Guardar equipa"}
+        {saving ? "A guardar…" : "Guardar equipa desta jornada"}
       </button>
       {!complete && (
         <p className="mt-2 text-center text-xs text-ink/50">
