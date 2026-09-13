@@ -3,9 +3,7 @@
 import { useState } from "react";
 import { createBrowserSupabase } from "@/lib/supabase/client";
 
-import { CURRENT_SEASON_ID } from "@/lib/supabaseClient";
-
-export function FixedCostButton() {
+export function FixedCostButton({ seasonId }: { seasonId: string }) {
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -15,7 +13,7 @@ export function FixedCostButton() {
     const supabase = createBrowserSupabase();
     const month = new Date().toLocaleDateString("pt-PT", { month: "2-digit", year: "numeric" }).replace("/", "/");
     const { error } = await supabase.rpc("register_fixed_cost", {
-      p_season_id: CURRENT_SEASON_ID,
+      p_season_id: seasonId,
       p_category: "servidor",
       p_description: `Alojamento da plataforma (Vercel + Supabase) · ${month}`,
       p_amount: 20,

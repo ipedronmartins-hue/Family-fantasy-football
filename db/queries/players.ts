@@ -1,4 +1,4 @@
-import { supabase, CURRENT_SEASON_ID } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import { Player, PositionGroup } from "@/types/player";
 
 interface PlayerRow {
@@ -24,11 +24,11 @@ function mapRow(row: PlayerRow): Player {
   };
 }
 
-export async function getRoster(): Promise<Player[]> {
+export async function getRoster(seasonId: string): Promise<Player[]> {
   const { data, error } = await supabase
     .from("players")
     .select("id, external_id, name, shirt_number, position_group, position_label, traits, rating")
-    .eq("season_id", CURRENT_SEASON_ID)
+    .eq("season_id", seasonId)
     .order("shirt_number");
 
   if (error) throw new Error(`Failed to load roster: ${error.message}`);

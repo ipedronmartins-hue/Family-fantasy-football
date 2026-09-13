@@ -3,9 +3,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserSupabase } from "@/lib/supabase/client";
-import { CURRENT_SEASON_ID } from "@/lib/supabaseClient";
 
-export function NewMatchForm({ nextMatchday }: { nextMatchday: number }) {
+export function NewMatchForm({
+  teamSlug,
+  seasonId,
+  nextMatchday,
+}: {
+  teamSlug: string;
+  seasonId: string;
+  nextMatchday: number;
+}) {
   const router = useRouter();
   const [opponent, setOpponent] = useState("");
   const [date, setDate] = useState("");
@@ -22,7 +29,7 @@ export function NewMatchForm({ nextMatchday }: { nextMatchday: number }) {
 
     const supabase = createBrowserSupabase();
     const { error } = await supabase.from("matches").insert({
-      season_id: CURRENT_SEASON_ID,
+      season_id: seasonId,
       matchday: nextMatchday,
       opponent,
       competition,
@@ -35,7 +42,7 @@ export function NewMatchForm({ nextMatchday }: { nextMatchday: number }) {
       setMessage(error.message);
       return;
     }
-    router.push("/gondomar/admin");
+    router.push(`/${teamSlug}/admin`);
     router.refresh();
   }
 

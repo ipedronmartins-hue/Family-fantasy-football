@@ -10,10 +10,18 @@ const FILTERS: { id: Filter; label: string }[] = [
   { id: "all", label: "Todas" },
   { id: "home", label: "Casa" },
   { id: "away", label: "Fora" },
-  { id: "featured", label: "FC Porto" },
+  { id: "featured", label: "Destaque" },
 ];
 
-export function JogosClient({ fixtures }: { fixtures: Match[] }) {
+export function JogosClient({
+  fixtures,
+  teamSlug,
+  homeTeamName,
+}: {
+  fixtures: Match[];
+  teamSlug: string;
+  homeTeamName: string;
+}) {
   const [filter, setFilter] = useState<Filter>("all");
 
   const visible = fixtures.filter((f) => {
@@ -43,7 +51,7 @@ export function JogosClient({ fixtures }: { fixtures: Match[] }) {
 
       <div className="rounded-2xl border border-line bg-white px-4">
         {visible.map((match) => (
-          <FixtureRow key={match.id} match={match} />
+          <FixtureRow key={match.id} match={match} teamSlug={teamSlug} homeTeamName={homeTeamName} />
         ))}
       </div>
     </>

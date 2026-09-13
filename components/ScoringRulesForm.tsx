@@ -17,7 +17,7 @@ export interface ScoringRules {
 const FIELDS: { key: keyof Omit<ScoringRules, "bonus">; label: string }[] = [
   { key: "correctOutcomeGuess", label: "Acertar o resultado (vitória / empate / derrota)" },
   { key: "exactResultGuess", label: "Acertar o resultado exato" },
-  { key: "exactGoalsGuess", label: "Acertar o nº exato de golos do Gondomar" },
+  { key: "exactGoalsGuess", label: "Acertar o nº exato de golos da equipa" },
   { key: "scorerGuess", label: "Acertar o marcador" },
   { key: "assistGuess", label: "Acertar a assistência" },
   { key: "manOfTheMatchGuess", label: "Acertar o Homem do Jogo" },

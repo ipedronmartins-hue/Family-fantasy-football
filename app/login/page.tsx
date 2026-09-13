@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { createBrowserSupabase } from "@/lib/supabase/client";
 
-export default function LoginPage() {
+function LoginForm() {
+  const searchParams = useSearchParams();
+  const team = searchParams.get("team");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
@@ -11,10 +14,13 @@ export default function LoginPage() {
     e.preventDefault();
     setStatus("sending");
     const supabase = createBrowserSupabase();
+    const callbackUrl = new URL("/auth/callback", window.location.origin);
+    if (team) callbackUrl.searchParams.set("team", team);
+
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: callbackUrl.toString(),
       },
     });
     setStatus(error ? "error" : "sent");
@@ -58,5 +64,13 @@ export default function LoginPage() {
         </form>
       )}
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }

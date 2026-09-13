@@ -1,4 +1,4 @@
-import { supabase, CURRENT_SEASON_ID } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import { Match } from "@/types/match";
 
 interface MatchRow {
@@ -30,22 +30,22 @@ function mapRow(row: MatchRow): Match {
   };
 }
 
-export async function getFixtures(): Promise<Match[]> {
+export async function getFixtures(seasonId: string): Promise<Match[]> {
   const { data, error } = await supabase
     .from("matches")
     .select(SELECT)
-    .eq("season_id", CURRENT_SEASON_ID)
+    .eq("season_id", seasonId)
     .order("kickoff_at");
 
   if (error) throw new Error(`Failed to load fixtures: ${error.message}`);
   return (data as MatchRow[]).map(mapRow);
 }
 
-export async function getNextFixture(referenceDate: Date = new Date()): Promise<Match> {
+export async function getNextFixture(seasonId: string, referenceDate: Date = new Date()): Promise<Match> {
   const { data, error } = await supabase
     .from("matches")
     .select(SELECT)
-    .eq("season_id", CURRENT_SEASON_ID)
+    .eq("season_id", seasonId)
     .gte("kickoff_at", referenceDate.toISOString())
     .order("kickoff_at")
     .limit(1)
@@ -54,18 +54,17 @@ export async function getNextFixture(referenceDate: Date = new Date()): Promise<
   if (error) throw new Error(`Failed to load next fixture: ${error.message}`);
   if (data) return mapRow(data as MatchRow);
 
-  // Season is over — fall back to the last matchday.
-  const all = await getFixtures();
+  const all = await getFixtures(seasonId);
   return all[all.length - 1];
 }
 
 /** `code` is the "J9"-style label used in URLs, not the database id. */
-export async function getFixtureByCode(code: string): Promise<Match | undefined> {
+export async function getFixtureByCode(seasonId: string, code: string): Promise<Match | undefined> {
   const matchday = Number(code.replace("J", ""));
   const { data, error } = await supabase
     .from("matches")
     .select(SELECT)
-    .eq("season_id", CURRENT_SEASON_ID)
+    .eq("season_id", seasonId)
     .eq("matchday", matchday)
     .maybeSingle();
 

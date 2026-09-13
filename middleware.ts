@@ -5,10 +5,8 @@ const SUPABASE_URL = "https://ztahmjclkaajxdclhddw.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0YWhtamNsa2FhanhkY2xoZGR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4NTcyNDUsImV4cCI6MjEwNDQzMzI0NX0.WdJojeZKn6Okghh0GV0coZ8uJsSC9Sz_f9QrxJaCK2s";
 
-// Gondomar's team id -- the only team on the platform for now. When real
-// multi-tenant routing exists, this becomes "the team for this request"
-// instead of a constant.
-const CURRENT_TEAM_ID = "00000000-0000-0000-0000-000000000002";
+// Paths that are platform-level, not owned by any one team.
+const RESERVED_SLUGS = new Set(["login", "auth", "bloqueado", "registar-equipa", "superadmin", ""]);
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -34,18 +32,16 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
+  const teamSlug = pathname.split("/")[1] ?? "";
 
-  // Blocking only applies to Gondomar's own area -- the institutional
-  // homepage, login, and team registration are platform-level, not
-  // owned by any one team, so they must stay reachable regardless.
-  if (!pathname.startsWith("/gondomar")) {
+  if (RESERVED_SLUGS.has(teamSlug)) {
     return response;
   }
 
   const { data: team } = await supabase
     .from("teams")
     .select("platform_status")
-    .eq("id", CURRENT_TEAM_ID)
+    .eq("slug", teamSlug)
     .maybeSingle();
 
   if (team?.platform_status === "blocked") {

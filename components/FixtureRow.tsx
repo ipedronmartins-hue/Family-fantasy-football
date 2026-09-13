@@ -2,7 +2,15 @@ import Link from "next/link";
 import { Match } from "@/types/match";
 import { formatMatchDate } from "@/lib/format";
 
-export function FixtureRow({ match }: { match: Match }) {
+export function FixtureRow({
+  match,
+  teamSlug,
+  homeTeamName,
+}: {
+  match: Match;
+  teamSlug: string;
+  homeTeamName: string;
+}) {
   const played = match.homeGoals != null && match.awayGoals != null;
   const friendly = match.competition === "Amigável";
 
@@ -17,8 +25,8 @@ export function FixtureRow({ match }: { match: Match }) {
       </span>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-ink">
-          {match.home ? "Gondomar SC" : match.opponent} vs{" "}
-          {match.home ? match.opponent : "Gondomar SC"}
+          {match.home ? homeTeamName : match.opponent} vs{" "}
+          {match.home ? match.opponent : homeTeamName}
           {match.featured ? " · 🔥" : ""}
         </p>
         <p className="text-xs text-ink/50">
@@ -28,7 +36,7 @@ export function FixtureRow({ match }: { match: Match }) {
         </p>
       </div>
       <Link
-        href={played ? `/gondomar/jogos/${match.code}` : `/gondomar/prever?jornada=${match.code}`}
+        href={played ? `/${teamSlug}/jogos/${match.code}` : `/${teamSlug}/prever?jornada=${match.code}`}
         className="shrink-0 rounded-lg bg-blue/10 px-3 py-2 text-xs font-semibold text-blue"
       >
         {played ? "Ver jogo" : "Prever"}

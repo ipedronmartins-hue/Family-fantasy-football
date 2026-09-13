@@ -2,13 +2,14 @@ import { redirect } from "next/navigation";
 import { getCurrentParent } from "@/lib/auth";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { SuperAdminClient, TeamRow } from "@/components/SuperAdminClient";
+import { RegistrationRequestsClient, RequestRow } from "@/components/RegistrationRequestsClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function SuperAdminPage() {
   const parent = await getCurrentParent();
   if (parent === null) redirect("/login");
-  if (parent === "onboarding") redirect("/onboarding");
+  if (parent === "onboarding") redirect("/");
   if (!parent.isPlatformOwner) redirect("/");
 
   const supabase = await createServerSupabase();
@@ -19,7 +20,7 @@ export default async function SuperAdminPage() {
   const monthLabel = monthStart.toLocaleDateString("pt-PT", { month: "long", year: "numeric" });
 
   const [{ data: teams }, { data: payments }, { data: requests }] = await Promise.all([
-    supabase.from("teams").select("id, name, platform_status, club_id, clubs(name)"),
+    supabase.from("teams").select("id, name, slug, platform_status, club_id, clubs(name)"),
     supabase.from("platform_payments").select("team_id, amount").eq("month", monthKey),
     supabase
       .from("team_registration_requests")
@@ -33,9 +34,19 @@ export default async function SuperAdminPage() {
     teamId: t.id,
     teamName: t.name,
     clubName: (t.clubs as unknown as { name: string } | null)?.name ?? "",
+    slug: t.slug,
     status: t.platform_status as "active" | "blocked",
     paid: paidMap.has(t.id),
     amount: paidMap.get(t.id) ?? null,
+  }));
+
+  const requestRows: RequestRow[] = (requests ?? []).map((r) => ({
+    id: r.id,
+    clubName: r.club_name,
+    teamName: r.team_name,
+    contactName: r.contact_name,
+    contactEmail: r.contact_email,
+    contactPhone: r.contact_phone,
   }));
 
   return (
@@ -53,27 +64,9 @@ export default async function SuperAdminPage() {
         </div>
 
         <h2 className="mb-2 font-display text-lg font-semibold text-ink">
-          Pedidos de inscrição {requests && requests.length > 0 ? `(${requests.length})` : ""}
+          Pedidos de inscrição {requestRows.length > 0 ? `(${requestRows.length})` : ""}
         </h2>
-        {!requests || requests.length === 0 ? (
-          <div className="rounded-2xl border border-line bg-white p-6 text-center text-sm text-ink/60">
-            Sem pedidos pendentes.
-          </div>
-        ) : (
-          <ul className="rounded-2xl border border-line bg-white px-4">
-            {requests.map((r) => (
-              <li key={r.id} className="border-b border-line py-3 text-sm last:border-b-0">
-                <p className="font-semibold text-ink">
-                  {r.team_name} · {r.club_name}
-                </p>
-                <p className="text-xs text-ink/60">
-                  {r.contact_name} · {r.contact_email}
-                  {r.contact_phone ? ` · ${r.contact_phone}` : ""}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
+        <RegistrationRequestsClient requests={requestRows} />
       </main>
     </div>
   );

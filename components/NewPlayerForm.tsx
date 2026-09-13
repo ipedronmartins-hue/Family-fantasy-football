@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserSupabase } from "@/lib/supabase/client";
-import { CURRENT_SEASON_ID } from "@/lib/supabaseClient";
 import { PositionGroup, POSITION_GROUP_LABELS, POSITION_GROUP_ORDER } from "@/types/player";
 
 function slugify(name: string, number: number): string {
@@ -17,7 +16,15 @@ function slugify(name: string, number: number): string {
   );
 }
 
-export function NewPlayerForm({ nextNumber }: { nextNumber: number }) {
+export function NewPlayerForm({
+  teamSlug,
+  seasonId,
+  nextNumber,
+}: {
+  teamSlug: string;
+  seasonId: string;
+  nextNumber: number;
+}) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [number, setNumber] = useState(String(nextNumber));
@@ -33,7 +40,7 @@ export function NewPlayerForm({ nextNumber }: { nextNumber: number }) {
 
     const supabase = createBrowserSupabase();
     const { error } = await supabase.from("players").insert({
-      season_id: CURRENT_SEASON_ID,
+      season_id: seasonId,
       external_id: slugify(name, Number(number)),
       name,
       shirt_number: Number(number),
@@ -47,7 +54,7 @@ export function NewPlayerForm({ nextNumber }: { nextNumber: number }) {
       setMessage(error.message);
       return;
     }
-    router.push("/gondomar/plantel");
+    router.push(`/${teamSlug}/plantel`);
     router.refresh();
   }
 

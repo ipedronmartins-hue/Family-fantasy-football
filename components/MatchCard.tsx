@@ -2,10 +2,19 @@ import Link from "next/link";
 import { Match } from "@/types/match";
 import { formatMatchDate } from "@/lib/format";
 
-export function MatchCard({ match, showPredictLink = true }: { match: Match; showPredictLink?: boolean }) {
-  const home = "Gondomar SC";
-  const homeTeam = match.home ? home : match.opponent;
-  const awayTeam = match.home ? match.opponent : home;
+export function MatchCard({
+  match,
+  teamSlug,
+  homeTeamName,
+  showPredictLink = true,
+}: {
+  match: Match;
+  teamSlug: string;
+  homeTeamName: string;
+  showPredictLink?: boolean;
+}) {
+  const homeTeam = match.home ? homeTeamName : match.opponent;
+  const awayTeam = match.home ? match.opponent : homeTeamName;
 
   return (
     <div className="rounded-2xl border border-line bg-white p-4">
@@ -21,7 +30,7 @@ export function MatchCard({ match, showPredictLink = true }: { match: Match; sho
       </p>
       {showPredictLink && (
         <Link
-          href={`/gondomar/prever?jornada=${match.code}`}
+          href={`/${teamSlug}/prever?jornada=${match.code}`}
           className="mt-3 block rounded-xl bg-blue py-2.5 text-center text-sm font-semibold text-white"
         >
           Fazer previsão

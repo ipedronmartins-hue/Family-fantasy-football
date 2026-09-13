@@ -28,6 +28,7 @@ export function PredictionForm({
   match,
   players,
   fantasyTeamId,
+  homeTeamName,
   initial,
   initialLineup,
   locked,
@@ -35,6 +36,7 @@ export function PredictionForm({
   match: Match;
   players: Player[];
   fantasyTeamId: string;
+  homeTeamName: string;
   initial: InitialPrediction | null;
   initialLineup: string[];
   locked: boolean;
@@ -49,8 +51,8 @@ export function PredictionForm({
   const [message, setMessage] = useState<string | null>(null);
 
   const attackers = players.filter((p) => p.positionGroup === "EXT" || p.positionGroup === "AV");
-  const homeLabel = match.home ? "Gondomar SC" : match.opponent;
-  const awayLabel = match.home ? match.opponent : "Gondomar SC";
+  const homeLabel = match.home ? homeTeamName : match.opponent;
+  const awayLabel = match.home ? match.opponent : homeTeamName;
   const outcome = deriveOutcome(goalsHome, goalsAway);
   const outcomeLabel =
     outcome === "home" ? `${homeLabel} vence` : outcome === "away" ? `${awayLabel} vence` : outcome === "draw" ? "Empate" : null;
