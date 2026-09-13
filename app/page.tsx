@@ -1,6 +1,18 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getCurrentParent } from "@/lib/auth";
 
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  // Already have an account? Skip the pitch and go straight to your team —
+  // this is what makes installing the app as a PWA work well: launching it
+  // always opens "/", which then lands you exactly where you left off.
+  const parent = await getCurrentParent();
+  if (parent && parent !== "onboarding") {
+    redirect(`/${parent.teamSlug}`);
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pb-10 pt-8">
       <p className="text-sm text-blue">Family Fantasy Soccer</p>

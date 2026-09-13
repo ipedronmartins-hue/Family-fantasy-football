@@ -9,6 +9,7 @@ export interface CurrentParent {
   fantasyTeamId: string;
   fantasyTeamName: string;
   formation: string;
+  teamSlug: string;
 }
 
 /**
@@ -26,7 +27,7 @@ export async function getCurrentParent(): Promise<CurrentParent | null | "onboar
 
   const { data: parent } = await supabase
     .from("parents")
-    .select("display_name, is_admin, is_platform_owner")
+    .select("display_name, is_admin, is_platform_owner, season_id, seasons(teams(slug))")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -40,6 +41,9 @@ export async function getCurrentParent(): Promise<CurrentParent | null | "onboar
 
   if (!team) return "onboarding";
 
+  const teamSlug =
+    (parent.seasons as unknown as { teams: { slug: string } | null } | null)?.teams?.slug ?? "";
+
   return {
     userId: user.id,
     email: user.email,
@@ -49,5 +53,6 @@ export async function getCurrentParent(): Promise<CurrentParent | null | "onboar
     fantasyTeamId: team.id,
     fantasyTeamName: team.name,
     formation: team.formation,
+    teamSlug,
   };
 }
