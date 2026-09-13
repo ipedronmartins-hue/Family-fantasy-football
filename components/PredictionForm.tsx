@@ -50,7 +50,6 @@ export function PredictionForm({
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  const attackers = players.filter((p) => p.positionGroup === "EXT" || p.positionGroup === "AV");
   const homeLabel = match.home ? homeTeamName : match.opponent;
   const awayLabel = match.home ? match.opponent : homeTeamName;
   const outcome = deriveOutcome(goalsHome, goalsAway);
@@ -162,7 +161,7 @@ export function PredictionForm({
         className="mb-4 w-full rounded-xl border border-line px-3 py-2"
       >
         <option value="">Escolher jogador</option>
-        {attackers.map((p) => (
+        {players.map((p) => (
           <option key={p.id} value={p.id}>
             {p.name}
             {p.setPieces ? ` ⚽ (${p.setPieces})` : ""}
