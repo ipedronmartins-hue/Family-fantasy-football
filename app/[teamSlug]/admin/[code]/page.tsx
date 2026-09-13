@@ -25,7 +25,7 @@ export default async function AdminMatchPage({
   const [{ data: match }, roster] = await Promise.all([
     supabase
       .from("matches")
-      .select("id, matchday, opponent, home, home_goals, away_goals, man_of_the_match_id, locked_at")
+      .select("id, matchday, opponent, home, home_goals, away_goals, man_of_the_match_id, locked_at, status")
       .eq("season_id", team.seasonId)
       .eq("matchday", matchday)
       .maybeSingle(),
@@ -75,6 +75,7 @@ export default async function AdminMatchPage({
           }))}
           initialLocked={locked}
           initialRealLineup={(realLineup ?? []).map((l) => l.player_id)}
+          initialStatus={match.status as "scheduled" | "live" | "finished"}
           submittedCount={submittedCount ?? 0}
           totalTeams={totalTeams ?? 0}
         />

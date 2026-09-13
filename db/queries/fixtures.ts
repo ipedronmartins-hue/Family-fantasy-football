@@ -11,9 +11,10 @@ interface MatchRow {
   featured: boolean;
   home_goals: number | null;
   away_goals: number | null;
+  status: "scheduled" | "live" | "finished";
 }
 
-const SELECT = "id, matchday, opponent, competition, kickoff_at, home, featured, home_goals, away_goals";
+const SELECT = "id, matchday, opponent, competition, kickoff_at, home, featured, home_goals, away_goals, status";
 
 function mapRow(row: MatchRow): Match {
   return {
@@ -27,6 +28,7 @@ function mapRow(row: MatchRow): Match {
     featured: row.featured,
     homeGoals: row.home_goals,
     awayGoals: row.away_goals,
+    status: row.status,
   };
 }
 
@@ -42,6 +44,18 @@ export async function getFixtures(seasonId: string): Promise<Match[]> {
 }
 
 export async function getNextFixture(seasonId: string, referenceDate: Date = new Date()): Promise<Match> {
+  // A match already underway takes priority over "next scheduled", even
+  // though its kickoff time is technically in the past by now.
+  const { data: liveMatch } = await supabase
+    .from("matches")
+    .select(SELECT)
+    .eq("season_id", seasonId)
+    .eq("status", "live")
+    .order("kickoff_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (liveMatch) return mapRow(liveMatch as MatchRow);
+
   const { data, error } = await supabase
     .from("matches")
     .select(SELECT)

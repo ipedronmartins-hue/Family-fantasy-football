@@ -47,7 +47,7 @@ export default async function PontuacaoPage({ params }: { params: Promise<{ team
           ))}
           {typeof rules.bonus === "object" && (
             <li className="flex items-center justify-between py-3 text-sm">
-              <span className="text-ink">Bónus de capitão no MVP acertado</span>
+              <span className="text-ink">Bónus de capitão (ou vice) no MVP acertado</span>
               <span className="font-display font-semibold text-gold">
                 +{(rules.bonus as { captain: number }).captain} pts
               </span>

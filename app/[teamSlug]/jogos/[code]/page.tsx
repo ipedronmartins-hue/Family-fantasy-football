@@ -6,6 +6,7 @@ import { getTeamBySlug } from "@/lib/team";
 import { getRoster } from "@/db/queries/players";
 import { formatMatchDate } from "@/lib/format";
 import { MotmVote } from "@/components/MotmVote";
+import { LiveMatchScore } from "@/components/LiveMatchScore";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ export default async function MatchSummaryPage({
   const [{ data: match }, roster] = await Promise.all([
     publicSupabase
       .from("matches")
-      .select("id, matchday, opponent, home, kickoff_at, home_goals, away_goals, man_of_the_match_id")
+      .select("id, matchday, opponent, home, kickoff_at, home_goals, away_goals, man_of_the_match_id, status")
       .eq("season_id", team.seasonId)
       .eq("matchday", matchday)
       .maybeSingle(),
@@ -57,7 +58,8 @@ export default async function MatchSummaryPage({
     mvpQuery,
   ]);
 
-  const played = match.home_goals !== null && match.away_goals !== null;
+  const status = (match.status as "scheduled" | "live" | "finished") ?? "scheduled";
+  const played = status !== "scheduled";
 
   let myPrediction: {
     predicted_home_goals: number | null;
@@ -117,12 +119,15 @@ export default async function MatchSummaryPage({
 
         {played && (
           <>
-            <div className="rounded-2xl border border-line bg-white p-4 text-center">
-              <p className="font-display text-4xl font-bold text-ink">
-                {match.home_goals} - {match.away_goals}
+            <LiveMatchScore
+              matchId={match.id}
+              initial={{ homeGoals: match.home_goals, awayGoals: match.away_goals, status }}
+            />
+            {mvp && (
+              <p className="-mt-2 text-center text-sm text-ink/60">
+                ⭐ Homem do Jogo (oficial): {mvp.name}
               </p>
-              {mvp && <p className="mt-2 text-sm text-ink/60">⭐ Homem do Jogo (oficial): {mvp.name}</p>}
-            </div>
+            )}
 
             {goals && goals.length > 0 && (
               <div className="rounded-2xl border border-line bg-white p-4">

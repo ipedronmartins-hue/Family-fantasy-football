@@ -11,6 +11,8 @@ export interface GoalRow {
   assistId: string | null;
 }
 
+type MatchStatus = "scheduled" | "live" | "finished";
+
 export function AdminMatchForm({
   matchId,
   players,
@@ -20,6 +22,7 @@ export function AdminMatchForm({
   initialGoals,
   initialLocked,
   initialRealLineup,
+  initialStatus,
   submittedCount,
   totalTeams,
 }: {
@@ -31,9 +34,13 @@ export function AdminMatchForm({
   initialGoals: GoalRow[];
   initialLocked: boolean;
   initialRealLineup: string[];
+  initialStatus: MatchStatus;
   submittedCount: number;
   totalTeams: number;
 }) {
+  const [status, setStatus] = useState<MatchStatus>(initialStatus);
+  const [liveHome, setLiveHome] = useState(initialHomeGoals ?? 0);
+  const [liveAway, setLiveAway] = useState(initialAwayGoals ?? 0);
   const [homeGoals, setHomeGoals] = useState(initialHomeGoals?.toString() ?? "");
   const [awayGoals, setAwayGoals] = useState(initialAwayGoals?.toString() ?? "");
   const [mvp, setMvp] = useState(initialMvp ?? "");
@@ -46,6 +53,48 @@ export function AdminMatchForm({
   const [busy, setBusy] = useState(false);
 
   const byId = new Map(players.map((p) => [p.id, p]));
+
+  async function startLive() {
+    setBusy(true);
+    setMessage(null);
+    const supabase = createBrowserSupabase();
+    const { error } = await supabase
+      .from("matches")
+      .update({ status: "live", home_goals: liveHome, away_goals: liveAway })
+      .eq("id", matchId);
+    setBusy(false);
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+    setStatus("live");
+    setHomeGoals(String(liveHome));
+    setAwayGoals(String(liveAway));
+  }
+
+  async function endLive() {
+    setBusy(true);
+    setMessage(null);
+    const supabase = createBrowserSupabase();
+    const { error } = await supabase.from("matches").update({ status: "finished" }).eq("id", matchId);
+    setBusy(false);
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+    setStatus("finished");
+  }
+
+  async function adjustLiveGoal(side: "home" | "away", delta: number) {
+    const nextHome = side === "home" ? Math.max(0, liveHome + delta) : liveHome;
+    const nextAway = side === "away" ? Math.max(0, liveAway + delta) : liveAway;
+    setLiveHome(nextHome);
+    setLiveAway(nextAway);
+    setHomeGoals(String(nextHome));
+    setAwayGoals(String(nextAway));
+    const supabase = createBrowserSupabase();
+    await supabase.from("matches").update({ home_goals: nextHome, away_goals: nextAway }).eq("id", matchId);
+  }
 
   async function toggleLock() {
     setBusy(true);
@@ -155,6 +204,78 @@ export function AdminMatchForm({
     <div className="space-y-5">
       <section className="rounded-2xl border border-line bg-white p-4">
         <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-display text-base font-semibold text-ink">Jogo ao vivo</h2>
+          <span
+            className={`text-xs font-semibold ${
+              status === "live" ? "text-red" : status === "finished" ? "text-ink/40" : "text-blue"
+            }`}
+          >
+            {status === "live" ? "🔴 AO VIVO" : status === "finished" ? "Terminado" : "Por começar"}
+          </span>
+        </div>
+
+        {status !== "live" ? (
+          <button
+            onClick={startLive}
+            disabled={busy || status === "finished"}
+            className="w-full rounded-xl bg-red py-2.5 text-sm font-semibold text-white disabled:opacity-40"
+          >
+            🔴 Iniciar jogo (ao vivo)
+          </button>
+        ) : (
+          <>
+            <div className="mb-3 flex items-center justify-center gap-6">
+              <div className="text-center">
+                <p className="mb-1 text-xs text-ink/50">Casa</p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => adjustLiveGoal("home", -1)}
+                    className="h-9 w-9 rounded-full border border-line text-lg font-semibold text-ink"
+                  >
+                    −
+                  </button>
+                  <span className="w-8 font-display text-3xl font-bold text-ink">{liveHome}</span>
+                  <button
+                    onClick={() => adjustLiveGoal("home", 1)}
+                    className="h-9 w-9 rounded-full bg-blue text-lg font-semibold text-white"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              <span className="text-ink/30">—</span>
+              <div className="text-center">
+                <p className="mb-1 text-xs text-ink/50">Fora</p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => adjustLiveGoal("away", -1)}
+                    className="h-9 w-9 rounded-full border border-line text-lg font-semibold text-ink"
+                  >
+                    −
+                  </button>
+                  <span className="w-8 font-display text-3xl font-bold text-ink">{liveAway}</span>
+                  <button
+                    onClick={() => adjustLiveGoal("away", 1)}
+                    className="h-9 w-9 rounded-full bg-blue text-lg font-semibold text-white"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={endLive}
+              disabled={busy}
+              className="w-full rounded-xl border border-line py-2.5 text-sm font-semibold text-ink disabled:opacity-50"
+            >
+              Terminar jogo
+            </button>
+          </>
+        )}
+      </section>
+
+      <section className="rounded-2xl border border-line bg-white p-4">
+        <div className="mb-3 flex items-center justify-between">
           <h2 className="font-display text-base font-semibold text-ink">Previsões</h2>
           <span className={`text-xs font-semibold ${locked ? "text-red" : "text-blue"}`}>
             {locked ? "🔒 Fechadas" : "🔓 Abertas"}
@@ -187,7 +308,7 @@ export function AdminMatchForm({
       </section>
 
       <section className="rounded-2xl border border-line bg-white p-4">
-        <h2 className="mb-3 font-display text-base font-semibold text-ink">Resultado</h2>
+        <h2 className="mb-3 font-display text-base font-semibold text-ink">Resultado final</h2>
         <div className="mb-3 flex items-center gap-2">
           <input
             value={homeGoals}

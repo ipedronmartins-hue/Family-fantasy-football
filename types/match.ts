@@ -13,4 +13,5 @@ export interface Match {
   featured?: boolean;
   homeGoals?: number | null;
   awayGoals?: number | null;
+  status?: "scheduled" | "live" | "finished";
 }

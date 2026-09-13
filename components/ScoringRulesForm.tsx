@@ -60,7 +60,7 @@ export function ScoringRulesForm({ seasonId, initial }: { seasonId: string; init
       ))}
       <div className="mb-3 flex items-center justify-between gap-3 border-t border-line pt-3">
         <label className="text-sm text-ink/80">
-          Bónus de capitão (se acertares o MVP e ele for o teu capitão)
+          Bónus de capitão (ou vice, se o capitão falhar) ao acertares o MVP
         </label>
         <input
           value={rules.bonus.captain}

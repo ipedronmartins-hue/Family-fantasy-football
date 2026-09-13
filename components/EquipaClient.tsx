@@ -25,16 +25,19 @@ export function EquipaClient({
   initialFormation,
   initialSelected,
   initialCaptain,
+  initialViceCaptain,
 }: {
   roster: Player[];
   fantasyTeamId: string;
   initialFormation: FormationId;
   initialSelected: string[];
   initialCaptain: string | null;
+  initialViceCaptain: string | null;
 }) {
   const [formation, setFormation] = useState<FormationId>(initialFormation);
   const [selected, setSelected] = useState<Set<string>>(new Set(initialSelected));
   const [captain, setCaptain] = useState<string | null>(initialCaptain);
+  const [viceCaptain, setViceCaptain] = useState<string | null>(initialViceCaptain);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -48,7 +51,7 @@ export function EquipaClient({
   }, [selected, roster]);
 
   const totalRequired = Object.values(required).reduce((a, b) => a + b, 0);
-  const complete = selected.size === totalRequired && captain !== null;
+  const complete = selected.size === totalRequired && captain !== null && viceCaptain !== null;
 
   function toggle(player: Player) {
     setMessage(null);
@@ -57,6 +60,7 @@ export function EquipaClient({
       if (next.has(player.id)) {
         next.delete(player.id);
         if (captain === player.id) setCaptain(null);
+        if (viceCaptain === player.id) setViceCaptain(null);
       } else {
         if (selectedByGroup[player.positionGroup] >= required[player.positionGroup]) return prev;
         next.add(player.id);
@@ -65,10 +69,21 @@ export function EquipaClient({
     });
   }
 
+  function pickCaptain(playerId: string) {
+    setCaptain(playerId);
+    if (viceCaptain === playerId) setViceCaptain(null);
+  }
+
+  function pickViceCaptain(playerId: string) {
+    setViceCaptain(playerId);
+    if (captain === playerId) setCaptain(null);
+  }
+
   function changeFormation(id: FormationId) {
     setFormation(id);
     setSelected(new Set());
     setCaptain(null);
+    setViceCaptain(null);
     setMessage(null);
   }
 
@@ -92,6 +107,7 @@ export function EquipaClient({
       fantasy_team_id: fantasyTeamId,
       player_id: playerId,
       is_captain: playerId === captain,
+      is_vice_captain: playerId === viceCaptain,
     }));
 
     const { error: insertError } = await supabase.from("fantasy_lineups").insert(rows);
@@ -141,7 +157,8 @@ export function EquipaClient({
 
       <p className="my-3 text-center text-sm font-semibold text-ink">
         {selected.size} / {totalRequired} selecionados
-        {captain && ` · Capitão escolhido`}
+        {captain && ` · Capitão ✓`}
+        {viceCaptain && ` · Vice ✓`}
       </p>
 
       {POSITION_GROUP_ORDER.map((group) => {
@@ -156,12 +173,13 @@ export function EquipaClient({
               {section.players.map((player) => {
                 const isSelected = selected.has(player.id);
                 const isCaptain = captain === player.id;
+                const isVice = viceCaptain === player.id;
                 const disabled =
                   !isSelected && selectedByGroup[group] >= required[group];
                 return (
                   <li
                     key={player.id}
-                    className="flex items-center gap-3 border-b border-line py-2.5 last:border-b-0"
+                    className="flex items-center gap-2 border-b border-line py-2.5 last:border-b-0"
                   >
                     <button
                       onClick={() => toggle(player)}
@@ -176,16 +194,26 @@ export function EquipaClient({
                     >
                       {player.number}
                     </button>
-                    <span className="text-sm text-ink">{player.name}</span>
+                    <span className="min-w-0 flex-1 truncate text-sm text-ink">{player.name}</span>
                     {isSelected && (
-                      <button
-                        onClick={() => setCaptain(player.id)}
-                        className={`ml-auto text-xs font-semibold ${
-                          isCaptain ? "text-gold" : "text-ink/30"
-                        }`}
-                      >
-                        {isCaptain ? "★ Capitão" : "☆ Capitão"}
-                      </button>
+                      <div className="flex shrink-0 gap-1">
+                        <button
+                          onClick={() => pickCaptain(player.id)}
+                          className={`rounded-full px-2 py-1 text-[11px] font-semibold ${
+                            isCaptain ? "bg-gold text-ink" : "bg-line text-ink/50"
+                          }`}
+                        >
+                          C
+                        </button>
+                        <button
+                          onClick={() => pickViceCaptain(player.id)}
+                          className={`rounded-full px-2 py-1 text-[11px] font-semibold ${
+                            isVice ? "bg-blue/20 text-blue" : "bg-line text-ink/50"
+                          }`}
+                        >
+                          VC
+                        </button>
+                      </div>
                     )}
                   </li>
                 );
@@ -204,7 +232,8 @@ export function EquipaClient({
       </button>
       {!complete && (
         <p className="mt-2 text-center text-xs text-ink/50">
-          Escolhe os {totalRequired} titulares e marca um capitão para poderes guardar.
+          Escolhe os {totalRequired} titulares e marca um capitão (C) e um vice (VC) para
+          poderes guardar. Se o capitão falhar o Homem do Jogo, o bónus passa para o vice.
         </p>
       )}
       {message && <p className="mt-3 text-center text-xs text-blue">{message}</p>}

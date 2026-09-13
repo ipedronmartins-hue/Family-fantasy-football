@@ -19,11 +19,12 @@ export default async function EquipaPage({ params }: { params: Promise<{ teamSlu
 
   const { data: lineup } = await supabase
     .from("fantasy_lineups")
-    .select("player_id, is_captain")
+    .select("player_id, is_captain, is_vice_captain")
     .eq("fantasy_team_id", parent.fantasyTeamId);
 
   const initialSelected = (lineup ?? []).map((l) => l.player_id);
   const initialCaptain = (lineup ?? []).find((l) => l.is_captain)?.player_id ?? null;
+  const initialViceCaptain = (lineup ?? []).find((l) => l.is_vice_captain)?.player_id ?? null;
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col pb-20">
@@ -47,6 +48,7 @@ export default async function EquipaPage({ params }: { params: Promise<{ teamSlu
           initialFormation={parent.formation as FormationId}
           initialSelected={initialSelected}
           initialCaptain={initialCaptain}
+          initialViceCaptain={initialViceCaptain}
         />
       </main>
     </div>
