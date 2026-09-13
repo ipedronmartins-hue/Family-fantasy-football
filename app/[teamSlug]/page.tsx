@@ -2,9 +2,11 @@ import Link from "next/link";
 import { getNextFixture, getFixtures } from "@/db/queries/fixtures";
 import { getCurrentParent } from "@/lib/auth";
 import { getTeamBySlug } from "@/lib/team";
+import { getRoster } from "@/db/queries/players";
 import { supabase } from "@/lib/supabaseClient";
 import { MatchCard } from "@/components/MatchCard";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { MotmVote } from "@/components/MotmVote";
 
 export const dynamic = "force-dynamic";
 
@@ -75,6 +77,31 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
   const podium = (season ?? []).some((s) => s.total_points > 0) ? season ?? [] : [];
   const quotaPaid = !!quotaResult.data;
 
+  // Surface voting on the homepage itself, so every registered parent
+  // actually sees it -- not just those who happen to open that match's page.
+  let voteMatch: { id: string; matchday: number } | null = null;
+  if (hasTeam) {
+    const { data: lastFinished } = await supabase
+      .from("matches")
+      .select("id, matchday")
+      .eq("season_id", team.seasonId)
+      .eq("status", "finished")
+      .order("kickoff_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (lastFinished) {
+      const { data: vote } = await supabase
+        .from("motm_votes")
+        .select("player_id")
+        .eq("match_id", lastFinished.id)
+        .eq("parent_id", parent.userId)
+        .maybeSingle();
+      if (!vote) voteMatch = lastFinished;
+    }
+  }
+  const roster = voteMatch ? await getRoster(team.seasonId) : [];
+
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col pb-20">
       <header className="bg-blue px-5 pb-8 pt-8 text-white">
@@ -115,6 +142,15 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
           </p>
         )}
         {!hasTeam && <div className="mb-4" />}
+
+        {voteMatch && (
+          <div className="mb-8">
+            <p className="mb-2 text-xs font-semibold text-gold">
+              🗳️ VOTA — JORNADA {voteMatch.matchday}
+            </p>
+            <MotmVote matchId={voteMatch.id} players={roster} initialVote={null} />
+          </div>
+        )}
 
         <div className="mb-8 rounded-2xl border border-line bg-white p-4">
           <p className="text-xs font-semibold text-blue">💙 PARA ONDE VAI O TEU CONTRIBUTO?</p>
