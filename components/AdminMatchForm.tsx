@@ -9,6 +9,7 @@ export interface GoalRow {
   id: string;
   scorerId: string;
   assistId: string | null;
+  isOwnGoal: boolean;
 }
 
 type MatchStatus = "scheduled" | "live" | "finished";
@@ -49,6 +50,7 @@ export function AdminMatchForm({
   const [goals, setGoals] = useState<GoalRow[]>(initialGoals);
   const [newScorer, setNewScorer] = useState("");
   const [newAssist, setNewAssist] = useState("");
+  const [newOwnGoal, setNewOwnGoal] = useState(false);
   const [locked, setLocked] = useState(initialLocked);
   const [realLineup, setRealLineup] = useState<Set<string>>(new Set(initialRealLineup));
   const [message, setMessage] = useState<string | null>(null);
@@ -168,7 +170,7 @@ export function AdminMatchForm({
     const supabase = createBrowserSupabase();
     const { data, error } = await supabase
       .from("match_goals")
-      .insert({ match_id: matchId, scorer_id: newScorer, assist_id: newAssist || null })
+      .insert({ match_id: matchId, scorer_id: newScorer, assist_id: newOwnGoal ? null : newAssist || null, is_own_goal: newOwnGoal })
       .select("id")
       .single();
     setBusy(false);
@@ -176,9 +178,10 @@ export function AdminMatchForm({
       setMessage(error.message);
       return;
     }
-    setGoals((prev) => [...prev, { id: data.id, scorerId: newScorer, assistId: newAssist || null }]);
+    setGoals((prev) => [...prev, { id: data.id, scorerId: newScorer, assistId: newOwnGoal ? null : newAssist || null, isOwnGoal: newOwnGoal }]);
     setNewScorer("");
     setNewAssist("");
+    setNewOwnGoal(false);
   }
 
   async function removeGoal(id: string) {
@@ -197,9 +200,13 @@ export function AdminMatchForm({
     setBusy(true);
     setMessage(null);
     const supabase = createBrowserSupabase();
-    const { error } = await supabase.rpc("recalculate_match_points", { p_match_id: matchId });
+    const [predResult, ownResult] = await Promise.all([
+      supabase.rpc("recalculate_match_points", { p_match_id: matchId }),
+      supabase.rpc("recalculate_ownership_points", { p_match_id: matchId }),
+    ]);
     setBusy(false);
-    setMessage(error ? error.message : "Pontos recalculados para todos os pais.");
+    const error = predResult.error || ownResult.error;
+    setMessage(error ? error.message : "Pontos recalculados (Previsão + Equipa) para todos os pais.");
   }
 
   return (
@@ -366,7 +373,8 @@ export function AdminMatchForm({
           {goals.map((g) => (
             <li key={g.id} className="flex items-center gap-2 border-b border-line py-2 text-sm last:border-b-0">
               <span className="flex-1">
-                ⚽ {byId.get(g.scorerId)?.name ?? "?"}
+                {g.isOwnGoal ? "⚽ (próprio) " : "⚽ "}
+                {byId.get(g.scorerId)?.name ?? "?"}
                 {g.assistId && <span className="text-ink/50"> · assist. {byId.get(g.assistId)?.name}</span>}
               </span>
               <button onClick={() => removeGoal(g.id)} className="text-xs font-semibold text-red">
@@ -388,19 +396,25 @@ export function AdminMatchForm({
               </option>
             ))}
           </select>
-          <select
-            value={newAssist}
-            onChange={(e) => setNewAssist(e.target.value)}
-            className="flex-1 rounded-xl border border-line px-2 py-2 text-sm"
-          >
-            <option value="">Assistência</option>
-            {players.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
+          {!newOwnGoal && (
+            <select
+              value={newAssist}
+              onChange={(e) => setNewAssist(e.target.value)}
+              className="flex-1 rounded-xl border border-line px-2 py-2 text-sm"
+            >
+              <option value="">Assistência</option>
+              {players.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
+        <label className="mt-2 flex items-center gap-2 text-xs text-ink/70">
+          <input type="checkbox" checked={newOwnGoal} onChange={(e) => setNewOwnGoal(e.target.checked)} />
+          Foi um golo na própria baliza
+        </label>
         <button
           onClick={addGoal}
           disabled={busy || !newScorer}
@@ -415,7 +429,7 @@ export function AdminMatchForm({
         disabled={busy}
         className="w-full rounded-xl bg-gold py-3 text-sm font-semibold text-ink disabled:opacity-50"
       >
-        Recalcular pontos desta jornada
+        Recalcular pontos (Previsão + Equipa)
       </button>
       {message && <p className="text-center text-xs text-blue">{message}</p>}
     </div>

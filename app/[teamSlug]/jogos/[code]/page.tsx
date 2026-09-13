@@ -66,10 +66,11 @@ export default async function MatchSummaryPage({
     predicted_away_goals: number | null;
   } | null = null;
   let myPoints: { points: number; breakdown: Record<string, number> } | null = null;
+  let myOwnershipPoints: { points: number } | null = null;
   let myVote: string | null = null;
 
   const supabase = await createServerSupabase();
-  const [{ data: pred }, { data: vote }] = await Promise.all([
+  const [{ data: pred }, { data: vote }, { data: ownershipPoints }] = await Promise.all([
     supabase
       .from("predictions")
       .select("id, predicted_home_goals, predicted_away_goals")
@@ -82,7 +83,14 @@ export default async function MatchSummaryPage({
       .eq("match_id", match.id)
       .eq("parent_id", parent.userId)
       .maybeSingle(),
+    supabase
+      .from("fantasy_lineup_points")
+      .select("points")
+      .eq("fantasy_team_id", parent.fantasyTeamId)
+      .eq("match_id", match.id)
+      .maybeSingle(),
   ]);
+  myOwnershipPoints = ownershipPoints;
 
   if (pred) {
     myPrediction = pred;
@@ -165,6 +173,17 @@ export default async function MatchSummaryPage({
                 )}
               </div>
             )}
+
+            <div className="rounded-2xl border border-line bg-white p-4">
+              <h2 className="mb-2 font-display text-sm font-semibold text-ink">A tua Equipa nesta jornada</h2>
+              {myOwnershipPoints ? (
+                <p className="font-display text-2xl font-bold text-gold">
+                  +{myOwnershipPoints.points} pts
+                </p>
+              ) : (
+                <p className="text-xs text-ink/50">Pontos ainda não calculados.</p>
+              )}
+            </div>
 
             <MotmVote matchId={match.id} players={roster} initialVote={myVote} />
 

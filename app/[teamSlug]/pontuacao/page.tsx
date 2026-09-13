@@ -13,6 +13,33 @@ const LABELS: { key: string; label: string }[] = [
   { key: "startingXIGuess", label: "Por cada titular acertado no 11 provável" },
 ];
 
+const POSITION_LABELS: Record<string, string> = {
+  GR: "Guarda-redes",
+  DEF: "Defesa",
+  MED: "Médio",
+  EXT: "Extremo",
+  AV: "Avançado",
+};
+
+interface Rules {
+  bonus?: { captain: number };
+  ownership?: {
+    goalsByPosition: Record<string, number>;
+    assist: number;
+    cleanSheetGoalkeeperDefender: number;
+    cleanSheetMidfielder: number;
+    playedUpTo60: number;
+    played60Plus: number;
+    ownGoal: number;
+    yellowCard: number;
+    redCard: number;
+    penaltyMiss: number;
+    penaltySave: number;
+    goalsConcededPer2: number;
+  };
+  [key: string]: unknown;
+}
+
 export default async function PontuacaoPage({ params }: { params: Promise<{ teamSlug: string }> }) {
   const { teamSlug } = await params;
   const team = await getTeamBySlug(teamSlug);
@@ -23,7 +50,8 @@ export default async function PontuacaoPage({ params }: { params: Promise<{ team
     .eq("season_id", team.seasonId)
     .maybeSingle();
 
-  const rules = (data?.rules ?? {}) as Record<string, number | { captain: number }>;
+  const rules = (data?.rules ?? {}) as Rules;
+  const ownership = rules.ownership;
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col pb-20">
@@ -33,6 +61,48 @@ export default async function PontuacaoPage({ params }: { params: Promise<{ team
       </header>
 
       <main className="flex-1 px-5 pt-6">
+        <h2 className="mb-2 font-display text-base font-semibold text-ink">
+          Equipa — pelo desempenho real dos teus jogadores
+        </h2>
+        {ownership && (
+          <ul className="mb-6 rounded-2xl border border-line bg-white px-4">
+            {Object.entries(ownership.goalsByPosition).map(([pos, pts]) => (
+              <li key={pos} className="flex items-center justify-between border-b border-line py-2.5 text-sm">
+                <span className="text-ink">Golo — {POSITION_LABELS[pos] ?? pos}</span>
+                <span className="font-display font-semibold text-blue">+{pts} pts</span>
+              </li>
+            ))}
+            {[
+              ["Assistência", ownership.assist],
+              ["Jogar até 60 min", ownership.playedUpTo60],
+              ["Jogar 60+ min", ownership.played60Plus],
+              ["Clean sheet — GR/Defesa", ownership.cleanSheetGoalkeeperDefender],
+              ["Clean sheet — Médio", ownership.cleanSheetMidfielder],
+              ["Defesa de grande penalidade", ownership.penaltySave],
+              ["Bónus (melhores em campo)", "1 a 3"],
+              ["Cartão amarelo", ownership.yellowCard],
+              ["Cartão vermelho", ownership.redCard],
+              ["Golo próprio", ownership.ownGoal],
+              ["Falhar grande penalidade", ownership.penaltyMiss],
+              ["Cada 2 golos sofridos (GR/Defesa)", ownership.goalsConcededPer2],
+            ].map(([label, pts]) => (
+              <li key={label as string} className="flex items-center justify-between border-b border-line py-2.5 text-sm last:border-b-0">
+                <span className="text-ink">{label}</span>
+                <span className="font-display font-semibold text-blue">
+                  {typeof pts === "number" && pts > 0 ? "+" : ""}
+                  {pts} {typeof pts === "number" ? "pts" : ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="-mt-4 mb-6 text-xs text-ink/50">
+          O capitão duplica os pontos que ganhar. Se não jogar, passa para o vice.
+        </p>
+
+        <h2 className="mb-2 font-display text-base font-semibold text-ink">
+          Previsão — pelo que acertares
+        </h2>
         <ul className="rounded-2xl border border-line bg-white px-4">
           {LABELS.map(({ key, label }) => (
             <li
@@ -45,12 +115,10 @@ export default async function PontuacaoPage({ params }: { params: Promise<{ team
               </span>
             </li>
           ))}
-          {typeof rules.bonus === "object" && (
+          {rules.bonus && (
             <li className="flex items-center justify-between py-3 text-sm">
               <span className="text-ink">Bónus de capitão (ou vice) no MVP acertado</span>
-              <span className="font-display font-semibold text-gold">
-                +{(rules.bonus as { captain: number }).captain} pts
-              </span>
+              <span className="font-display font-semibold text-gold">+{rules.bonus.captain} pts</span>
             </li>
           )}
         </ul>
