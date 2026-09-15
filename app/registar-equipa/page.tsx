@@ -59,7 +59,7 @@ export default function RegistarEquipaPage() {
           />
         </div>
         <div>
-          <label className="mb-1.5 block text-xs font-semibold text-ink/70">Equipa (ex: Sub-11)</label>
+          <label className="mb-1.5 block text-xs font-semibold text-ink/70">Escalão (ex: Sub-11, Sub-13…)</label>
           <input
             required
             value={teamName}
