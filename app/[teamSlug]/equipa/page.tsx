@@ -7,7 +7,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { isPredictionLocked } from "@/lib/deadline";
 import { formatMatchDate } from "@/lib/format";
 import { EquipaClient } from "@/components/EquipaClient";
-import { FormationId } from "@/config/formations";
+import { FORMAT_SQUAD_SIZE, defaultFormationFor } from "@/config/formations";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +24,7 @@ export default async function EquipaPage({
   if (parent === "onboarding") redirect(`${base}/onboarding`);
 
   const team = await getTeamBySlug(teamSlug);
+  const squadSize = FORMAT_SQUAD_SIZE[team.format];
   const [match, roster] = await Promise.all([
     jornada ? (await getFixtureByCode(team.seasonId, jornada)) ?? getNextFixture(team.seasonId) : getNextFixture(team.seasonId),
     getRoster(team.seasonId),
@@ -54,7 +55,7 @@ export default async function EquipaPage({
       .eq("fantasy_team_id", parent.fantasyTeamId)
       .lt("matches.kickoff_at", match.kickoffAt)
       .order("kickoff_at", { referencedTable: "matches", ascending: false })
-      .limit(11);
+      .limit(squadSize);
     if (lastLineup && lastLineup.length > 0) lineup = lastLineup;
   }
 
@@ -77,8 +78,8 @@ export default async function EquipaPage({
         </p>
         <p className="mt-2 text-xs text-white/60">
           Prazo: {formatMatchDate(match.date)} (90 min antes do pontapé de saída). Isto é a
-          tua Fantasy Team desta jornada — diferente do "11 provável" que preenches em cada
-          Previsão (o que achas que vai ser a titularidade real do treinador).
+          tua Fantasy Team desta jornada — diferente do "{squadSize} provável" que preenches em
+          cada Previsão (o que achas que vai ser a titularidade real do treinador).
         </p>
       </header>
 
@@ -88,7 +89,8 @@ export default async function EquipaPage({
           fantasyTeamId={parent.fantasyTeamId}
           matchId={match.id}
           locked={locked}
-          initialFormation={parent.formation as FormationId}
+          format={team.format}
+          initialFormation={parent.formation ?? defaultFormationFor(team.format)}
           initialSelected={initialSelected}
           initialCaptain={initialCaptain}
           initialViceCaptain={initialViceCaptain}

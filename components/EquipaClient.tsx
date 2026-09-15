@@ -5,17 +5,11 @@ import { Player, PositionGroup, POSITION_GROUP_ORDER, POSITION_GROUP_LABELS } fr
 import { groupRosterByPosition, assignPlayersToSlots } from "@/lib/roster";
 import { Pitch } from "@/components/Pitch";
 import { createBrowserSupabase } from "@/lib/supabase/client";
-import {
-  FORMATIONS,
-  FORMATION_LABELS,
-  FormationId,
-} from "@/config/formations";
+import { FORMATIONS_BY_FORMAT, formationIdsFor, TeamFormat } from "@/config/formations";
 
-const FORMATION_IDS = Object.keys(FORMATIONS) as FormationId[];
-
-function countsByGroup(formation: FormationId): Record<PositionGroup, number> {
+function countsByGroup(format: TeamFormat, formation: string): Record<PositionGroup, number> {
   const counts = { GR: 0, DEF: 0, MED: 0, EXT: 0, AV: 0 } as Record<PositionGroup, number>;
-  for (const slot of FORMATIONS[formation]) counts[slot.group]++;
+  for (const slot of FORMATIONS_BY_FORMAT[format][formation]) counts[slot.group]++;
   return counts;
 }
 
@@ -24,6 +18,7 @@ export function EquipaClient({
   fantasyTeamId,
   matchId,
   locked,
+  format,
   initialFormation,
   initialSelected,
   initialCaptain,
@@ -33,19 +28,23 @@ export function EquipaClient({
   fantasyTeamId: string;
   matchId: string;
   locked: boolean;
-  initialFormation: FormationId;
+  format: TeamFormat;
+  initialFormation: string;
   initialSelected: string[];
   initialCaptain: string | null;
   initialViceCaptain: string | null;
 }) {
-  const [formation, setFormation] = useState<FormationId>(initialFormation);
+  const formationIds = formationIdsFor(format);
+  const [formation, setFormation] = useState<string>(
+    formationIds.includes(initialFormation) ? initialFormation : formationIds[0]
+  );
   const [selected, setSelected] = useState<Set<string>>(new Set(initialSelected));
   const [captain, setCaptain] = useState<string | null>(initialCaptain);
   const [viceCaptain, setViceCaptain] = useState<string | null>(initialViceCaptain);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  const required = countsByGroup(formation);
+  const required = countsByGroup(format, formation);
   const sections = groupRosterByPosition(roster);
 
   const selectedByGroup = useMemo(() => {
@@ -83,7 +82,7 @@ export function EquipaClient({
     if (captain === playerId) setCaptain(null);
   }
 
-  function changeFormation(id: FormationId) {
+  function changeFormation(id: string) {
     setFormation(id);
     setSelected(new Set());
     setCaptain(null);
@@ -132,7 +131,7 @@ export function EquipaClient({
     setMessage(teamError ? teamError.message : "Equipa guardada para esta jornada.");
   }
 
-  const slotGroups = FORMATIONS[formation].map((s) => s.group);
+  const slotGroups = FORMATIONS_BY_FORMAT[format][formation].map((s) => s.group);
   const previewLineup = assignPlayersToSlots(slotGroups, Array.from(selected), roster);
 
   if (locked) {
@@ -146,7 +145,7 @@ export function EquipaClient({
   return (
     <>
       <div className="mb-4 flex gap-2 overflow-x-auto">
-        {FORMATION_IDS.map((id) => (
+        {formationIds.map((id) => (
           <button
             key={id}
             onClick={() => changeFormation(id)}
@@ -156,14 +155,14 @@ export function EquipaClient({
                 : "border-line bg-white text-ink/70"
             }`}
           >
-            {FORMATION_LABELS[id]}
+            {id}
           </button>
         ))}
       </div>
 
       {selected.size > 0 && (
         <Pitch
-          slots={FORMATIONS[formation]}
+          slots={FORMATIONS_BY_FORMAT[format][formation]}
           lineupIds={previewLineup.map((id) => id ?? "")}
           players={roster}
         />

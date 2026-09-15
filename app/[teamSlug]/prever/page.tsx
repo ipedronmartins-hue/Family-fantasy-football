@@ -7,6 +7,7 @@ import { getTeamBySlug } from "@/lib/team";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { formatMatchDate } from "@/lib/format";
 import { isPredictionLocked, DEADLINE_MINUTES_BEFORE_KICKOFF } from "@/lib/deadline";
+import { FORMAT_SQUAD_SIZE } from "@/config/formations";
 import { PredictionForm } from "@/components/PredictionForm";
 
 export const dynamic = "force-dynamic";
@@ -91,6 +92,7 @@ export default async function PreverPage({
           players={roster}
           fantasyTeamId={parent.fantasyTeamId}
           homeTeamName={homeTeamName}
+          squadSize={FORMAT_SQUAD_SIZE[team.format]}
           initial={initial}
           initialLineup={initialLineup}
           locked={locked}

@@ -20,11 +20,11 @@ export default async function SuperAdminPage() {
   const monthLabel = monthStart.toLocaleDateString("pt-PT", { month: "long", year: "numeric" });
 
   const [{ data: teams }, { data: payments }, { data: requests }] = await Promise.all([
-    supabase.from("teams").select("id, name, slug, platform_status, club_id, clubs(name)"),
+    supabase.from("teams").select("id, name, slug, platform_status, format, club_id, clubs(name)"),
     supabase.from("platform_payments").select("team_id, amount").eq("month", monthKey),
     supabase
       .from("team_registration_requests")
-      .select("id, club_name, team_name, contact_name, contact_email, contact_phone, created_at")
+      .select("id, club_name, team_name, format, contact_name, contact_email, contact_phone, created_at")
       .eq("status", "pending")
       .order("created_at"),
   ]);
@@ -35,6 +35,7 @@ export default async function SuperAdminPage() {
     teamName: t.name,
     clubName: (t.clubs as unknown as { name: string } | null)?.name ?? "",
     slug: t.slug,
+    format: t.format,
     status: t.platform_status as "active" | "blocked",
     paid: paidMap.has(t.id),
     amount: paidMap.get(t.id) ?? null,
@@ -44,6 +45,7 @@ export default async function SuperAdminPage() {
     id: r.id,
     clubName: r.club_name,
     teamName: r.team_name,
+    format: r.format,
     contactName: r.contact_name,
     contactEmail: r.contact_email,
     contactPhone: r.contact_phone,

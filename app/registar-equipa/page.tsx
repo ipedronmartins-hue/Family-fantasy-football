@@ -2,10 +2,14 @@
 
 import { useState } from "react";
 import { createBrowserSupabase } from "@/lib/supabase/client";
+import { TeamFormat, FORMAT_LABELS } from "@/config/formations";
+
+const FORMAT_OPTIONS: TeamFormat[] = ["fut5", "fut7", "fut9", "fut11"];
 
 export default function RegistarEquipaPage() {
   const [clubName, setClubName] = useState("");
   const [teamName, setTeamName] = useState("");
+  const [format, setFormat] = useState<TeamFormat>("fut11");
   const [contactName, setContactName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
@@ -18,6 +22,7 @@ export default function RegistarEquipaPage() {
     const { error } = await supabase.from("team_registration_requests").insert({
       club_name: clubName,
       team_name: teamName,
+      format,
       contact_name: contactName,
       contact_email: contactEmail,
       contact_phone: contactPhone || null,
@@ -66,6 +71,24 @@ export default function RegistarEquipaPage() {
             onChange={(e) => setTeamName(e.target.value)}
             className="w-full rounded-xl border border-line px-3 py-2.5"
           />
+        </div>
+        <div>
+          <label className="mb-1.5 block text-xs font-semibold text-ink/70">Formato</label>
+          <div className="grid grid-cols-4 gap-2">
+            {FORMAT_OPTIONS.map((f) => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => setFormat(f)}
+                className={`rounded-xl border py-2.5 text-sm font-semibold ${
+                  format === f ? "border-blue bg-blue text-white" : "border-line text-ink/70"
+                }`}
+              >
+                {f.replace("fut", "Fut")}
+              </button>
+            ))}
+          </div>
+          <p className="mt-1.5 text-xs text-ink/50">{FORMAT_LABELS[format]}</p>
         </div>
         <div>
           <label className="mb-1.5 block text-xs font-semibold text-ink/70">O teu nome</label>

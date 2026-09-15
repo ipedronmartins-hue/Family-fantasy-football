@@ -8,6 +8,7 @@ export interface TeamRow {
   teamName: string;
   clubName: string;
   slug: string;
+  format: string;
   status: "active" | "blocked";
   paid: boolean;
   amount: number | null;
@@ -59,7 +60,7 @@ export function SuperAdminClient({ month, teams }: { month: string; teams: TeamR
               <div>
                 <p className="text-sm font-semibold text-ink">{row.teamName}</p>
                 <p className="text-xs text-ink/50">
-                  {row.clubName} · /{row.slug}
+                  {row.clubName} · /{row.slug} · {row.format.replace("fut", "Fut")}
                 </p>
               </div>
               <span className={`text-xs font-semibold ${row.status === "active" ? "text-blue" : "text-red"}`}>

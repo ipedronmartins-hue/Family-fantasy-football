@@ -29,6 +29,7 @@ export function PredictionForm({
   players,
   fantasyTeamId,
   homeTeamName,
+  squadSize,
   initial,
   initialLineup,
   locked,
@@ -37,6 +38,7 @@ export function PredictionForm({
   players: Player[];
   fantasyTeamId: string;
   homeTeamName: string;
+  squadSize: number;
   initial: InitialPrediction | null;
   initialLineup: string[];
   locked: boolean;
@@ -123,13 +125,14 @@ export function PredictionForm({
   return (
     <div className="rounded-2xl border border-line bg-white p-4">
       <p className="mb-4 text-xs text-ink/50">
-        Isto é o <strong>11 provável</strong> — quem achas que o treinador vai pôr a titular
-        neste jogo. É diferente da tua Fantasy Team (a equipa que montaste em "A Minha Equipa").
+        Isto é o <strong>{squadSize} provável</strong> — quem achas que o treinador vai pôr a
+        titular neste jogo. É diferente da tua Fantasy Team (a equipa que montaste em "A Minha
+        Equipa").
       </p>
 
-      <label className="mb-1.5 block text-xs font-semibold text-ink/70">11 provável</label>
+      <label className="mb-1.5 block text-xs font-semibold text-ink/70">{squadSize} provável</label>
       <div className="mb-5">
-        <PlayerChecklist players={players} selected={lineup} onToggle={toggleLineup} />
+        <PlayerChecklist players={players} selected={lineup} onToggle={toggleLineup} max={squadSize} />
       </div>
 
       <label className="mb-1.5 block text-xs font-semibold text-ink/70">Resultado exato</label>

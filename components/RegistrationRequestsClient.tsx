@@ -8,6 +8,7 @@ export interface RequestRow {
   id: string;
   clubName: string;
   teamName: string;
+  format: string;
   contactName: string;
   contactEmail: string;
   contactPhone: string | null;
@@ -48,7 +49,7 @@ export function RegistrationRequestsClient({ requests }: { requests: RequestRow[
         {requests.map((r) => (
           <li key={r.id} className="border-b border-line py-3 text-sm last:border-b-0">
             <p className="font-semibold text-ink">
-              {r.teamName} · {r.clubName}
+              {r.teamName} · {r.clubName} · {r.format.replace("fut", "Fut")}
             </p>
             <p className="mb-2 text-xs text-ink/60">
               {r.contactName} · {r.contactEmail}

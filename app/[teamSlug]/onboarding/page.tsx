@@ -14,7 +14,7 @@ export default async function OnboardingPage({ params }: { params: Promise<{ tea
       <p className="mt-2 text-sm text-ink/60">
         Isto cria o teu perfil e a tua equipa Fantasy para a época {team.seasonLabel}.
       </p>
-      <OnboardingForm teamSlug={teamSlug} seasonId={team.seasonId} />
+      <OnboardingForm teamSlug={teamSlug} seasonId={team.seasonId} format={team.format} />
     </div>
   );
 }

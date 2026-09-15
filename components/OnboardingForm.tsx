@@ -3,8 +3,17 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createBrowserSupabase } from "@/lib/supabase/client";
+import { TeamFormat, defaultFormationFor } from "@/config/formations";
 
-export function OnboardingForm({ teamSlug, seasonId }: { teamSlug: string; seasonId: string }) {
+export function OnboardingForm({
+  teamSlug,
+  seasonId,
+  format,
+}: {
+  teamSlug: string;
+  seasonId: string;
+  format: TeamFormat;
+}) {
   const router = useRouter();
   const [displayName, setDisplayName] = useState("");
   const [teamName, setTeamName] = useState("");
@@ -42,7 +51,7 @@ export function OnboardingForm({ teamSlug, seasonId }: { teamSlug: string; seaso
       parent_id: user.id,
       season_id: seasonId,
       name: teamName,
-      formation: "4-3-3",
+      formation: defaultFormationFor(format),
     });
     if (teamError) {
       setError(teamError.message);

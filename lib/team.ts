@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { TeamFormat } from "@/config/formations";
 
 export interface TeamContext {
   teamId: string;
@@ -9,13 +10,14 @@ export interface TeamContext {
   seasonId: string;
   seasonLabel: string;
   platformStatus: "active" | "blocked";
+  format: TeamFormat;
 }
 
 /** Looks up a team by its URL slug. Calls notFound() if it doesn't exist. */
 export async function getTeamBySlug(slug: string): Promise<TeamContext> {
   const { data, error } = await supabase
     .from("teams")
-    .select("id, name, slug, platform_status, clubs(name), seasons(id, label)")
+    .select("id, name, slug, platform_status, format, clubs(name), seasons(id, label)")
     .eq("slug", slug)
     .maybeSingle();
 
@@ -33,5 +35,6 @@ export async function getTeamBySlug(slug: string): Promise<TeamContext> {
     seasonId: season.id,
     seasonLabel: season.label,
     platformStatus: data.platform_status as "active" | "blocked",
+    format: data.format as TeamFormat,
   };
 }

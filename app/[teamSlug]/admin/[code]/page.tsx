@@ -4,6 +4,7 @@ import { getTeamBySlug } from "@/lib/team";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getRoster } from "@/db/queries/players";
 import { isPredictionLocked } from "@/lib/deadline";
+import { FORMAT_SQUAD_SIZE } from "@/config/formations";
 import { AdminMatchForm } from "@/components/AdminMatchForm";
 import { PlayerPerformanceForm } from "@/components/PlayerPerformanceForm";
 
@@ -95,6 +96,7 @@ export default async function AdminMatchPage({
           kickoffAt={match.kickoff_at}
           initialRealLineup={(realLineup ?? []).map((l) => l.player_id)}
           initialStatus={match.status as "scheduled" | "live" | "finished"}
+          squadSize={FORMAT_SQUAD_SIZE[team.format]}
           submittedCount={submittedCount ?? 0}
           totalTeams={totalTeams ?? 0}
         />

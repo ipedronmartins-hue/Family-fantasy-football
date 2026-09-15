@@ -25,6 +25,7 @@ export function AdminMatchForm({
   kickoffAt,
   initialRealLineup,
   initialStatus,
+  squadSize,
   submittedCount,
   totalTeams,
 }: {
@@ -38,6 +39,7 @@ export function AdminMatchForm({
   kickoffAt: string;
   initialRealLineup: string[];
   initialStatus: MatchStatus;
+  squadSize: number;
   submittedCount: number;
   totalTeams: number;
 }) {
@@ -315,8 +317,8 @@ export function AdminMatchForm({
       </section>
 
       <section className="rounded-2xl border border-line bg-white p-4">
-        <h2 className="mb-3 font-display text-base font-semibold text-ink">Onze real (titulares)</h2>
-        <PlayerChecklist players={players} selected={realLineup} onToggle={toggleRealLineupPlayer} />
+        <h2 className="mb-3 font-display text-base font-semibold text-ink">{squadSize} titulares (onze real)</h2>
+        <PlayerChecklist players={players} selected={realLineup} onToggle={toggleRealLineupPlayer} max={squadSize} />
         <button
           onClick={saveRealLineup}
           disabled={busy}
