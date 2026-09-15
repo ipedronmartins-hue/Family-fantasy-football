@@ -25,7 +25,7 @@ export default async function PlantelPage({ params }: { params: Promise<{ teamSl
         </p>
         <h1 className="mt-1 font-display text-3xl font-semibold">Plantel</h1>
         <p className="mt-2 text-sm text-white/80">
-          {roster.length} atletas convocáveis para o Family Fantasy Soccer.
+          {roster.length} atletas convocáveis para o Family Fantasy Formação.
         </p>
       </header>
 

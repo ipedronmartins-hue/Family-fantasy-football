@@ -38,10 +38,10 @@ export default function RegistarEquipaPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pb-20 pt-8">
-      <p className="text-sm text-blue">Family Fantasy Soccer</p>
+      <p className="text-sm text-blue">Family Fantasy Formação</p>
       <h1 className="mt-1 font-display text-3xl font-semibold text-ink">Trazer a tua equipa</h1>
       <p className="mt-2 text-sm text-ink/60">
-        A tua equipa pode ter a sua própria versão do Family Fantasy Soccer, com o vosso
+        A tua equipa pode ter a sua própria versão do Family Fantasy Formação, com o vosso
         plantel e calendário, por 20 €/mês.
       </p>
       <a href="/" className="mt-2 inline-block text-xs font-semibold text-blue">

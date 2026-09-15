@@ -114,7 +114,7 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
           Tu jogas na bancada.
         </h1>
         <p className="mt-3 text-sm text-white/80">
-          Bem-vindo ao Family Fantasy Soccer — a competição dos pais do {team.clubName} {team.teamName}.
+          Bem-vindo ao Family Fantasy Formação — a competição dos pais do {team.clubName} {team.teamName}.
           Escolhe os teus 11, o teu capitão, e tenta antecipar o que vai acontecer dentro das
           quatro linhas em cada jornada.
         </p>
@@ -233,7 +233,7 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
               Mais do que um jogo
             </h2>
             <p className="mb-3 text-sm text-ink/70">
-              O Family Fantasy Soccer foi criado para aproximar os pais da equipa — mas tem
+              O Family Fantasy Formação foi criado para aproximar os pais da equipa — mas tem
               também um segundo objetivo: ajudar a nossa equipa. Pedimos a quem quiser
               participar um contributo de <strong>3 a 5 € por mês / família</strong>, que ajuda a
               suportar despesas do dia a dia, como:

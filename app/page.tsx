@@ -15,7 +15,7 @@ export default async function HomePage() {
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pb-10 pt-8">
-      <p className="text-sm text-blue">Family Fantasy Soccer</p>
+      <p className="text-sm text-blue">Family Fantasy Formação</p>
       <h1 className="mt-1 font-display text-3xl font-semibold text-ink">
         Porque criámos esta plataforma
       </h1>

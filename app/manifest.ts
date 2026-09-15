@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Family Fantasy Soccer",
-    short_name: "FFSoccer",
+    name: "Family Fantasy Formação",
+    short_name: "FFFormação",
     description: "O Fantasy Football privado dos pais.",
     start_url: "/",
     scope: "/",
