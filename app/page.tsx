@@ -17,9 +17,12 @@ export default async function HomePage() {
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pb-10 pt-8">
       {parent === "onboarding" && (
         <div className="mb-6 rounded-2xl border border-gold bg-gold/10 p-4 text-sm text-ink">
-          A tua conta já está criada. Para continuares, usa o link específico da tua equipa
-          (o que o administrador dela partilhou contigo, por exemplo ".../gondomar") — esta
-          página inicial não sabe a que equipa pertences.
+          A tua conta já está criada. Para continuares, usa o link específico da tua equipa (o
+          que o administrador dela partilhou contigo), ou{" "}
+          <Link href="/login" className="font-semibold text-blue underline">
+            volta a entrar e escreve o nome da equipa
+          </Link>{" "}
+          quando for pedido.
         </div>
       )}
 
