@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export default async function SuperAdminPage() {
   const parent = await getCurrentParent();
   if (parent === null) redirect("/login");
-  if (parent === "onboarding") redirect("/");
+  if (parent === "onboarding" || parent === "pending" || parent === "suspended") redirect("/");
   if (!parent.isPlatformOwner) redirect("/");
 
   const supabase = await createServerSupabase();

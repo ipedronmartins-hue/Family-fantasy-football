@@ -9,7 +9,7 @@ export default async function HomePage() {
   // this is what makes installing the app as a PWA work well: launching it
   // always opens "/", which then lands you exactly where you left off.
   const parent = await getCurrentParent();
-  if (parent && parent !== "onboarding") {
+  if (parent && typeof parent === "object") {
     redirect(`/${parent.teamSlug}`);
   }
 
@@ -23,6 +23,16 @@ export default async function HomePage() {
             volta a entrar e escreve o nome da equipa
           </Link>{" "}
           quando for pedido.
+        </div>
+      )}
+      {parent === "pending" && (
+        <div className="mb-6 rounded-2xl border border-gold bg-gold/10 p-4 text-sm text-ink">
+          ⏳ A tua conta está a aguardar aprovação do administrador da tua equipa.
+        </div>
+      )}
+      {parent === "suspended" && (
+        <div className="mb-6 rounded-2xl border border-red bg-red/10 p-4 text-sm text-ink">
+          🔒 O administrador da tua equipa suspendeu o teu acesso. Fala com ele para resolver.
         </div>
       )}
 

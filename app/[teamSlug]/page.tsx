@@ -41,8 +41,17 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
     getCurrentParent(),
   ]);
 
-  const hasTeam = parent && parent !== "onboarding";
-  const ctaHref = parent === null ? `/login?team=${teamSlug}` : parent === "onboarding" ? `${base}/onboarding` : `${base}/equipa`;
+  const hasTeam = typeof parent === "object" && parent !== null;
+  const ctaHref =
+    parent === null
+      ? `/login?team=${teamSlug}`
+      : parent === "onboarding"
+      ? `${base}/onboarding`
+      : parent === "pending"
+      ? `${base}/pendente`
+      : parent === "suspended"
+      ? `${base}/suspenso`
+      : `${base}/equipa`;
   const ctaLabel = hasTeam ? "Ver a minha equipa" : "Montar a minha equipa";
 
   const monthStart = new Date();

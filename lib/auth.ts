@@ -13,11 +13,15 @@ export interface CurrentParent {
 }
 
 /**
- * Returns the logged-in parent + their Fantasy Team, or null if the visitor
- * is not logged in, or "onboarding" if logged in but hasn't finished
- * creating their profile/team yet.
+ * Returns the logged-in parent + their Fantasy Team, or:
+ * - null: not logged in
+ * - "onboarding": logged in, hasn't finished creating their profile/team yet
+ * - "pending": profile created, waiting for the team admin to approve them
+ * - "suspended": admin has suspended this parent's access
  */
-export async function getCurrentParent(): Promise<CurrentParent | null | "onboarding"> {
+export async function getCurrentParent(): Promise<
+  CurrentParent | null | "onboarding" | "pending" | "suspended"
+> {
   const supabase = await createServerSupabase();
   const {
     data: { user },
@@ -27,11 +31,13 @@ export async function getCurrentParent(): Promise<CurrentParent | null | "onboar
 
   const { data: parent } = await supabase
     .from("parents")
-    .select("display_name, is_admin, is_platform_owner, season_id, seasons(teams(slug))")
+    .select("display_name, is_admin, is_platform_owner, status, season_id, seasons(teams(slug))")
     .eq("id", user.id)
     .maybeSingle();
 
   if (!parent) return "onboarding";
+  if (parent.status === "pending") return "pending";
+  if (parent.status === "suspended") return "suspended";
 
   const { data: team } = await supabase
     .from("fantasy_teams")

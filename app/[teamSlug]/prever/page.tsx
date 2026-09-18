@@ -23,6 +23,8 @@ export default async function PreverPage({
   const base = `/${teamSlug}`;
   if (parent === null) redirect(`/login?team=${teamSlug}`);
   if (parent === "onboarding") redirect(`${base}/onboarding`);
+  if (parent === "pending") redirect(`${base}/pendente`);
+  if (parent === "suspended") redirect(`${base}/suspenso`);
 
   const team = await getTeamBySlug(teamSlug);
   const [match, roster] = await Promise.all([

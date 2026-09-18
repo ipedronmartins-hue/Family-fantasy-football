@@ -12,6 +12,8 @@ export default async function PlantelPage({ params }: { params: Promise<{ teamSl
   const parent = await getCurrentParent();
   if (parent === null) redirect(`/login?team=${teamSlug}`);
   if (parent === "onboarding") redirect(`/${teamSlug}/onboarding`);
+  if (parent === "pending") redirect(`/${teamSlug}/pendente`);
+  if (parent === "suspended") redirect(`/${teamSlug}/suspenso`);
 
   const team = await getTeamBySlug(teamSlug);
   const roster = await getRoster(team.seasonId);

@@ -22,6 +22,8 @@ export default async function MatchSummaryPage({
   const [team, parent] = await Promise.all([getTeamBySlug(teamSlug), getCurrentParent()]);
   if (parent === null) redirect(`/login?team=${teamSlug}`);
   if (parent === "onboarding") redirect(`${base}/onboarding`);
+  if (parent === "pending") redirect(`${base}/pendente`);
+  if (parent === "suspended") redirect(`${base}/suspenso`);
 
   const [{ data: match }, roster] = await Promise.all([
     publicSupabase

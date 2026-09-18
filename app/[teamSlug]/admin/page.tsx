@@ -14,6 +14,8 @@ export default async function AdminPage({ params }: { params: Promise<{ teamSlug
   const parent = await getCurrentParent();
   if (parent === null) redirect(`/login?team=${teamSlug}`);
   if (parent === "onboarding") redirect(`${base}/onboarding`);
+  if (parent === "pending") redirect(`${base}/pendente`);
+  if (parent === "suspended") redirect(`${base}/suspenso`);
   if (!parent.isAdmin) redirect(base);
 
   const team = await getTeamBySlug(teamSlug);
@@ -34,6 +36,13 @@ export default async function AdminPage({ params }: { params: Promise<{ teamSlug
       </header>
 
       <main className="flex-1 px-5 pt-6">
+        <Link
+          href={`${base}/admin/pais`}
+          className="mb-4 block rounded-2xl border border-blue bg-blue/5 p-4 text-center text-sm font-semibold text-blue"
+        >
+          👨‍👩‍👧 Pais — aprovar e gerir acessos →
+        </Link>
+
         <div className="mb-4 grid grid-cols-2 gap-2">
           <Link
             href={`${base}/admin/pagamentos`}

@@ -22,6 +22,8 @@ export default async function AdminMatchPage({
   const [parent, team] = await Promise.all([getCurrentParent(), getTeamBySlug(teamSlug)]);
   if (parent === null) redirect(`/login?team=${teamSlug}`);
   if (parent === "onboarding") redirect(`${base}/onboarding`);
+  if (parent === "pending") redirect(`${base}/pendente`);
+  if (parent === "suspended") redirect(`${base}/suspenso`);
   if (!parent.isAdmin) redirect(base);
 
   const supabase = await createServerSupabase();

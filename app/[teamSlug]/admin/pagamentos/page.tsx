@@ -13,6 +13,8 @@ export default async function AdminPaymentsPage({ params }: { params: Promise<{ 
   const parent = await getCurrentParent();
   if (parent === null) redirect(`/login?team=${teamSlug}`);
   if (parent === "onboarding") redirect(`${base}/onboarding`);
+  if (parent === "pending") redirect(`${base}/pendente`);
+  if (parent === "suspended") redirect(`${base}/suspenso`);
   if (!parent.isAdmin) redirect(base);
 
   const team = await getTeamBySlug(teamSlug);
