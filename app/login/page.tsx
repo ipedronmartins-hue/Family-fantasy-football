@@ -33,8 +33,20 @@ function LoginForm() {
         return;
       }
     }
-    router.push(team ? `/${team}/onboarding` : "/");
-    router.refresh();
+
+    if (team) {
+      router.push(`/${team}/onboarding`);
+      router.refresh();
+      return;
+    }
+
+    // No team in the URL and no existing profile -- we genuinely don't know
+    // which team to send them to. Rather than loop back to the marketing
+    // page with no explanation, say so plainly.
+    setBusy(false);
+    setErrorMsg(
+      "A tua conta está pronta, mas preciso de saber a tua equipa para continuar. Usa o link que a tua equipa partilhou (por exemplo: .../gondomar) em vez desta página."
+    );
   }
 
   async function handleLogin(e: React.FormEvent) {
