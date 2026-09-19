@@ -296,14 +296,7 @@ export function AdminMatchForm({
           {submittedCount} de {totalTeams} equipas já submeteram previsão
         </p>
         <p className="mb-3 text-xs text-ink/40">
-          Fecham sempre automaticamente 90 min antes do jogo (
-          {new Date(new Date(kickoffAt).getTime() - 90 * 60 * 1000).toLocaleString("pt-PT", {
-            day: "2-digit",
-            month: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-          ). O botão abaixo só fecha mais cedo se precisares.
+          Só fecham quando tu fechares — não há prazo automático.
         </p>
         <button
           onClick={toggleLock}
