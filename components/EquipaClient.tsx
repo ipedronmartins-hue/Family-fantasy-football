@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Player } from "@/types/player";
-import { DragPitchBuilder } from "@/components/DragPitchBuilder";
+import { PitchBuilder } from "@/components/PitchBuilder";
 import { createBrowserSupabase } from "@/lib/supabase/client";
 import { FORMATIONS_BY_FORMAT, formationIdsFor, TeamFormat } from "@/config/formations";
 
@@ -148,7 +148,7 @@ export function EquipaClient({
         {viceCaptain && ` · Vice ✓`}
       </p>
 
-      <DragPitchBuilder
+      <PitchBuilder
         slots={FORMATIONS_BY_FORMAT[format][formation]}
         roster={roster}
         assignments={assignments}
