@@ -19,27 +19,20 @@ export function playersNotIn(players: Player[], ids: string[]): Player[] {
 }
 
 /**
- * Assigns a set of selected player ids to formation slots, grouped by
- * position and ordered by shirt number. The formation only encodes how many
- * players of each group are needed and where they sit visually — which
- * specific player lands on which exact slot within a group is not something
- * the parent chooses, so this fills them consistently.
+ * Fills formation slots with the selected players in shirt-number order.
+ * Positions are no longer tied to a fixed tag per player -- a parent can
+ * put anyone anywhere (a player might have played left-back for half a
+ * match despite being "tagged" as a midfielder), so this is purely a
+ * consistent visual fill, not a position match.
  */
 export function assignPlayersToSlots(
-  slotGroups: PositionGroup[],
+  totalSlots: number,
   selectedIds: string[],
   players: Player[]
 ): (string | undefined)[] {
   const selected = players
     .filter((p) => selectedIds.includes(p.id))
     .sort((a, b) => a.number - b.number);
-
-  const queues = new Map<PositionGroup, string[]>();
-  for (const p of selected) {
-    const list = queues.get(p.positionGroup) ?? [];
-    list.push(p.id);
-    queues.set(p.positionGroup, list);
-  }
-
-  return slotGroups.map((group) => queues.get(group)?.shift());
+  const ids = selected.map((p) => p.id);
+  return Array.from({ length: totalSlots }, (_, i) => ids[i]);
 }

@@ -1,17 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Player, PositionGroup, POSITION_GROUP_ORDER, POSITION_GROUP_LABELS } from "@/types/player";
+import { useState } from "react";
+import { Player, POSITION_GROUP_ORDER, POSITION_GROUP_LABELS } from "@/types/player";
 import { groupRosterByPosition, assignPlayersToSlots } from "@/lib/roster";
 import { Pitch } from "@/components/Pitch";
 import { createBrowserSupabase } from "@/lib/supabase/client";
 import { FORMATIONS_BY_FORMAT, formationIdsFor, TeamFormat } from "@/config/formations";
-
-function countsByGroup(format: TeamFormat, formation: string): Record<PositionGroup, number> {
-  const counts = { GR: 0, DEF: 0, MED: 0, EXT: 0, AV: 0 } as Record<PositionGroup, number>;
-  for (const slot of FORMATIONS_BY_FORMAT[format][formation]) counts[slot.group]++;
-  return counts;
-}
 
 export function EquipaClient({
   roster,
@@ -44,16 +38,8 @@ export function EquipaClient({
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  const required = countsByGroup(format, formation);
   const sections = groupRosterByPosition(roster);
-
-  const selectedByGroup = useMemo(() => {
-    const counts = { GR: 0, DEF: 0, MED: 0, EXT: 0, AV: 0 } as Record<PositionGroup, number>;
-    for (const p of roster) if (selected.has(p.id)) counts[p.positionGroup]++;
-    return counts;
-  }, [selected, roster]);
-
-  const totalRequired = Object.values(required).reduce((a, b) => a + b, 0);
+  const totalRequired = FORMATIONS_BY_FORMAT[format][formation].length;
   const complete = selected.size === totalRequired && captain !== null && viceCaptain !== null;
 
   function toggle(player: Player) {
@@ -65,7 +51,7 @@ export function EquipaClient({
         if (captain === player.id) setCaptain(null);
         if (viceCaptain === player.id) setViceCaptain(null);
       } else {
-        if (selectedByGroup[player.positionGroup] >= required[player.positionGroup]) return prev;
+        if (next.size >= totalRequired) return prev;
         next.add(player.id);
       }
       return next;
@@ -131,8 +117,7 @@ export function EquipaClient({
     setMessage(teamError ? teamError.message : "Equipa guardada para esta jornada.");
   }
 
-  const slotGroups = FORMATIONS_BY_FORMAT[format][formation].map((s) => s.group);
-  const previewLineup = assignPlayersToSlots(slotGroups, Array.from(selected), roster);
+  const previewLineup = assignPlayersToSlots(totalRequired, Array.from(selected), roster);
 
   if (locked) {
     return (
@@ -173,22 +158,25 @@ export function EquipaClient({
         {captain && ` · Capitão ✓`}
         {viceCaptain && ` · Vice ✓`}
       </p>
+      <p className="mb-3 text-center text-xs text-ink/50">
+        Escolhe livremente — não precisas de respeitar a posição habitual de cada jogador. Se
+        o Zé Pedro jogou a defesa esquerdo, mete-o lá.
+      </p>
 
       {POSITION_GROUP_ORDER.map((group) => {
         const section = sections.find((s) => s.group === group);
-        if (!section || required[group] === 0) return null;
+        if (!section) return null;
         return (
           <section key={group} className="mb-5">
             <h2 className="mb-2 border-l-4 border-blue pl-3 font-display text-base font-semibold text-ink">
-              {POSITION_GROUP_LABELS[group]} · {selectedByGroup[group]}/{required[group]}
+              {POSITION_GROUP_LABELS[group]}
             </h2>
             <ul className="rounded-2xl border border-line bg-white px-4">
               {section.players.map((player) => {
                 const isSelected = selected.has(player.id);
                 const isCaptain = captain === player.id;
                 const isVice = viceCaptain === player.id;
-                const disabled =
-                  !isSelected && selectedByGroup[group] >= required[group];
+                const disabled = !isSelected && selected.size >= totalRequired;
                 return (
                   <li
                     key={player.id}
