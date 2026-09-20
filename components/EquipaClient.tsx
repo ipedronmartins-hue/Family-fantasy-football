@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Player, POSITION_GROUP_ORDER, POSITION_GROUP_LABELS } from "@/types/player";
-import { groupRosterByPosition, assignPlayersToSlots } from "@/lib/roster";
-import { Pitch } from "@/components/Pitch";
+import { Player } from "@/types/player";
+import { DragPitchBuilder } from "@/components/DragPitchBuilder";
 import { createBrowserSupabase } from "@/lib/supabase/client";
 import { FORMATIONS_BY_FORMAT, formationIdsFor, TeamFormat } from "@/config/formations";
 
@@ -32,48 +31,46 @@ export function EquipaClient({
   const [formation, setFormation] = useState<string>(
     formationIds.includes(initialFormation) ? initialFormation : formationIds[0]
   );
-  const [selected, setSelected] = useState<Set<string>>(new Set(initialSelected));
+  const totalRequired = FORMATIONS_BY_FORMAT[format][formation].length;
+
+  const [assignments, setAssignments] = useState<(string | null)[]>(() => {
+    const arr = Array.from({ length: totalRequired }, (_, i) => initialSelected[i] ?? null);
+    return arr;
+  });
   const [captain, setCaptain] = useState<string | null>(initialCaptain);
   const [viceCaptain, setViceCaptain] = useState<string | null>(initialViceCaptain);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  const sections = groupRosterByPosition(roster);
-  const totalRequired = FORMATIONS_BY_FORMAT[format][formation].length;
-  const complete = selected.size === totalRequired && captain !== null && viceCaptain !== null;
-
-  function toggle(player: Player) {
-    setMessage(null);
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(player.id)) {
-        next.delete(player.id);
-        if (captain === player.id) setCaptain(null);
-        if (viceCaptain === player.id) setViceCaptain(null);
-      } else {
-        if (next.size >= totalRequired) return prev;
-        next.add(player.id);
-      }
-      return next;
-    });
-  }
+  const selectedCount = assignments.filter((id) => id).length;
+  const complete = selectedCount === totalRequired && captain !== null && viceCaptain !== null;
 
   function pickCaptain(playerId: string) {
+    setMessage(null);
     setCaptain(playerId);
     if (viceCaptain === playerId) setViceCaptain(null);
   }
 
   function pickViceCaptain(playerId: string) {
+    setMessage(null);
     setViceCaptain(playerId);
     if (captain === playerId) setCaptain(null);
   }
 
   function changeFormation(id: string) {
     setFormation(id);
-    setSelected(new Set());
+    setAssignments(Array.from({ length: FORMATIONS_BY_FORMAT[format][id].length }, () => null));
     setCaptain(null);
     setViceCaptain(null);
     setMessage(null);
+  }
+
+  function handleAssignmentsChange(next: (string | null)[]) {
+    setMessage(null);
+    setAssignments(next);
+    const stillIn = new Set(next.filter((id) => id));
+    if (captain && !stillIn.has(captain)) setCaptain(null);
+    if (viceCaptain && !stillIn.has(viceCaptain)) setViceCaptain(null);
   }
 
   async function save() {
@@ -93,13 +90,15 @@ export function EquipaClient({
       return;
     }
 
-    const rows = Array.from(selected).map((playerId) => ({
-      fantasy_team_id: fantasyTeamId,
-      match_id: matchId,
-      player_id: playerId,
-      is_captain: playerId === captain,
-      is_vice_captain: playerId === viceCaptain,
-    }));
+    const rows = assignments
+      .filter((id): id is string => !!id)
+      .map((playerId) => ({
+        fantasy_team_id: fantasyTeamId,
+        match_id: matchId,
+        player_id: playerId,
+        is_captain: playerId === captain,
+        is_vice_captain: playerId === viceCaptain,
+      }));
 
     const { error: insertError } = await supabase.from("fantasy_lineups").insert(rows);
     if (insertError) {
@@ -116,8 +115,6 @@ export function EquipaClient({
     setSaving(false);
     setMessage(teamError ? teamError.message : "Equipa guardada para esta jornada.");
   }
-
-  const previewLineup = assignPlayersToSlots(totalRequired, Array.from(selected), roster);
 
   if (locked) {
     return (
@@ -145,96 +142,34 @@ export function EquipaClient({
         ))}
       </div>
 
-      {selected.size > 0 && (
-        <Pitch
-          slots={FORMATIONS_BY_FORMAT[format][formation]}
-          lineupIds={previewLineup.map((id) => id ?? "")}
-          players={roster}
-        />
-      )}
-
-      <p className="my-3 text-center text-sm font-semibold text-ink">
-        {selected.size} / {totalRequired} selecionados
+      <p className="mb-3 text-center text-sm font-semibold text-ink">
+        {selectedCount} / {totalRequired} em campo
         {captain && ` · Capitão ✓`}
         {viceCaptain && ` · Vice ✓`}
       </p>
-      <p className="mb-3 text-center text-xs text-ink/50">
-        Escolhe livremente — não precisas de respeitar a posição habitual de cada jogador. Se
-        o Zé Pedro jogou a defesa esquerdo, mete-o lá.
-      </p>
 
-      {POSITION_GROUP_ORDER.map((group) => {
-        const section = sections.find((s) => s.group === group);
-        if (!section) return null;
-        return (
-          <section key={group} className="mb-5">
-            <h2 className="mb-2 border-l-4 border-blue pl-3 font-display text-base font-semibold text-ink">
-              {POSITION_GROUP_LABELS[group]}
-            </h2>
-            <ul className="rounded-2xl border border-line bg-white px-4">
-              {section.players.map((player) => {
-                const isSelected = selected.has(player.id);
-                const isCaptain = captain === player.id;
-                const isVice = viceCaptain === player.id;
-                const disabled = !isSelected && selected.size >= totalRequired;
-                return (
-                  <li
-                    key={player.id}
-                    className="flex items-center gap-2 border-b border-line py-2.5 last:border-b-0"
-                  >
-                    <button
-                      onClick={() => toggle(player)}
-                      disabled={disabled}
-                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-display text-xs font-semibold ${
-                        isSelected
-                          ? "bg-blue text-white"
-                          : disabled
-                          ? "bg-line text-ink/30"
-                          : "bg-line text-ink"
-                      }`}
-                    >
-                      {player.number}
-                    </button>
-                    <span className="min-w-0 flex-1 truncate text-sm text-ink">{player.name}</span>
-                    {isSelected && (
-                      <div className="flex shrink-0 gap-1">
-                        <button
-                          onClick={() => pickCaptain(player.id)}
-                          className={`rounded-full px-2 py-1 text-[11px] font-semibold ${
-                            isCaptain ? "bg-gold text-ink" : "bg-line text-ink/50"
-                          }`}
-                        >
-                          C
-                        </button>
-                        <button
-                          onClick={() => pickViceCaptain(player.id)}
-                          className={`rounded-full px-2 py-1 text-[11px] font-semibold ${
-                            isVice ? "bg-blue/20 text-blue" : "bg-line text-ink/50"
-                          }`}
-                        >
-                          VC
-                        </button>
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        );
-      })}
+      <DragPitchBuilder
+        slots={FORMATIONS_BY_FORMAT[format][formation]}
+        roster={roster}
+        assignments={assignments}
+        onAssignmentsChange={handleAssignmentsChange}
+        captain={captain}
+        viceCaptain={viceCaptain}
+        onPickCaptain={pickCaptain}
+        onPickViceCaptain={pickViceCaptain}
+      />
 
       <button
         onClick={save}
         disabled={!complete || saving}
-        className="w-full rounded-xl bg-blue py-3 text-sm font-semibold text-white disabled:opacity-40"
+        className="mt-5 w-full rounded-xl bg-blue py-3 text-sm font-semibold text-white disabled:opacity-40"
       >
         {saving ? "A guardar…" : "Guardar equipa desta jornada"}
       </button>
       {!complete && (
         <p className="mt-2 text-center text-xs text-ink/50">
-          Escolhe os {totalRequired} titulares e marca um capitão (C) e um vice (VC) para
-          poderes guardar. Se o capitão falhar o Homem do Jogo, o bónus passa para o vice.
+          Coloca os {totalRequired} titulares em campo e marca um capitão (C) e um vice (VC)
+          para poderes guardar. Se o capitão falhar o Homem do Jogo, o bónus passa para o vice.
         </p>
       )}
       {message && <p className="mt-3 text-center text-xs text-blue">{message}</p>}
