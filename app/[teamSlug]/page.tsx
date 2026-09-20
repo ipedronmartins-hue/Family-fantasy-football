@@ -89,28 +89,37 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
 
   // Surface voting on the homepage itself, so every registered parent
   // actually sees it -- not just those who happen to open that match's page.
-  let voteMatch: { id: string; matchday: number } | null = null;
-  if (hasTeam) {
-    const { data: lastFinished } = await supabase
-      .from("matches")
-      .select("id, matchday, kickoff_at")
-      .eq("season_id", team.seasonId)
-      .eq("status", "finished")
-      .order("kickoff_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+  const { data: lastFinished } = await supabase
+    .from("matches")
+    .select("id, matchday, kickoff_at, man_of_the_match_id")
+    .eq("season_id", team.seasonId)
+    .eq("status", "finished")
+    .order("kickoff_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
-    if (lastFinished && !isVotingClosed(lastFinished.kickoff_at)) {
-      const { data: vote } = await supabase
-        .from("motm_votes")
-        .select("player_id")
-        .eq("match_id", lastFinished.id)
-        .eq("parent_id", parent.userId)
-        .maybeSingle();
-      if (!vote) voteMatch = lastFinished;
-    }
+  let voteMatch: { id: string; matchday: number } | null = null;
+  if (hasTeam && lastFinished && !isVotingClosed(lastFinished.kickoff_at)) {
+    const { data: vote } = await supabase
+      .from("motm_votes")
+      .select("player_id")
+      .eq("match_id", lastFinished.id)
+      .eq("parent_id", parent.userId)
+      .maybeSingle();
+    if (!vote) voteMatch = lastFinished;
   }
   const roster = voteMatch ? await getRoster(team.seasonId) : [];
+
+  let homemDoJogo: { name: string; votes: number } | null = null;
+  if (lastFinished?.man_of_the_match_id) {
+    const { data: motm } = await supabase
+      .from("motm_vote_tally")
+      .select("player_name, votes")
+      .eq("match_id", lastFinished.id)
+      .eq("player_id", lastFinished.man_of_the_match_id)
+      .maybeSingle();
+    if (motm) homemDoJogo = { name: motm.player_name, votes: motm.votes };
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col pb-20">
@@ -162,6 +171,46 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
           </div>
         )}
 
+        {homemDoJogo && (
+          <div className="mb-4 rounded-2xl border border-gold bg-gold/10 p-4 text-center">
+            <p className="text-xs font-semibold text-ink/60">⭐ HOMEM DO JOGO</p>
+            <p className="mt-1 font-display text-lg font-semibold text-ink">{homemDoJogo.name}</p>
+            <p className="text-xs text-ink/60">
+              {homemDoJogo.votes} {homemDoJogo.votes === 1 ? "voto" : "votos"} dos pais — é o
+              jogador que reuniu mais votos
+            </p>
+          </div>
+        )}
+
+        <div className="mb-8 grid grid-cols-2 gap-3">
+          <div className="rounded-2xl border border-line bg-white p-4">
+            <p className="text-xs font-semibold text-gold">🏆 BANCADA DO MÊS</p>
+            {monthlyLeader ? (
+              <>
+                <p className="mt-2 font-display text-base font-semibold text-blue">
+                  {monthlyLeader.team_name}
+                </p>
+                <p className="text-xs text-ink/60">{monthlyLeader.points} pts este mês</p>
+              </>
+            ) : (
+              <p className="mt-2 text-xs text-ink/50">Ainda sem líder este mês.</p>
+            )}
+          </div>
+          <Link href={`${base}/classificacao`} className="rounded-2xl border border-line bg-white p-4">
+            <p className="text-xs font-semibold text-ink/60">📊 CLASSIFICAÇÃO</p>
+            {podium.length > 0 ? (
+              <>
+                <p className="mt-2 font-display text-base font-semibold text-blue">
+                  🥇 {podium[0].team_name}
+                </p>
+                <p className="text-xs text-ink/60">{podium[0].total_points} pts na época</p>
+              </>
+            ) : (
+              <p className="mt-2 text-xs text-ink/50">A época ainda vai a começar.</p>
+            )}
+          </Link>
+        </div>
+
         <div className="mb-8 rounded-2xl border border-line bg-white p-4">
           <p className="text-xs font-semibold text-blue">💙 PARA ONDE VAI O TEU CONTRIBUTO?</p>
           <p className="mt-1 text-xs text-ink/60">3 a 5 €/mês por família</p>
@@ -189,51 +238,6 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
                 </div>
               ))}
             </div>
-          </section>
-        </ScrollReveal>
-
-        <ScrollReveal>
-          <section className="mb-8 rounded-2xl border border-line bg-white p-5">
-            <p className="text-xs font-semibold text-gold">🏆 MISTER DA BANCADA DO MÊS</p>
-            <p className="mt-2 text-sm text-ink/70">
-              Todos os meses há uma nova oportunidade para chegar ao topo — não precisas de
-              estar em primeiro no ranking geral para ganhar. Cada mês começa uma nova corrida.
-            </p>
-            {monthlyLeader ? (
-              <div className="mt-3 rounded-xl bg-blue/5 p-3 text-center">
-                <p className="font-display text-lg font-semibold text-blue">{monthlyLeader.team_name}</p>
-                <p className="text-xs text-ink/60">{monthlyLeader.points} pts este mês</p>
-              </div>
-            ) : (
-              <p className="mt-3 text-xs text-ink/50">
-                Ainda sem líder este mês — sê o primeiro a pontuar.
-              </p>
-            )}
-          </section>
-        </ScrollReveal>
-
-        <ScrollReveal>
-          <section className="mb-8 rounded-2xl border border-line bg-white p-5">
-            <p className="text-xs font-semibold text-ink/60">E NO FINAL DA ÉPOCA…</p>
-            <p className="mt-2 text-sm text-ink/70">
-              Os três melhores classificados do ranking geral serão distinguidos no final da
-              época. Os prémios poderão incluir merchandising do clube, equipamento ou material
-              desportivo para os seus filhos. Os prémios serão definidos de acordo com o que for
-              possível proporcionar no final da época.
-            </p>
-            {podium.length > 0 ? (
-              <div className="mt-3 space-y-2">
-                {podium.map((row, i) => (
-                  <div key={row.team_name} className="flex items-center gap-3 rounded-xl bg-blue/5 p-2.5">
-                    <span className="text-xl">{["🥇", "🥈", "🥉"][i]}</span>
-                    <span className="flex-1 text-sm font-semibold text-ink">{row.team_name}</span>
-                    <span className="text-sm font-semibold text-blue">{row.total_points} pts</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="mt-3 text-xs text-ink/50">A época ainda vai a começar.</p>
-            )}
           </section>
         </ScrollReveal>
 
