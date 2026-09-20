@@ -175,10 +175,7 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
           <div className="mb-4 rounded-2xl border border-gold bg-gold/10 p-4 text-center">
             <p className="text-xs font-semibold text-ink/60">⭐ HOMEM DO JOGO</p>
             <p className="mt-1 font-display text-lg font-semibold text-ink">{homemDoJogo.name}</p>
-            <p className="text-xs text-ink/60">
-              {homemDoJogo.votes} {homemDoJogo.votes === 1 ? "voto" : "votos"} dos pais — é o
-              jogador que reuniu mais votos
-            </p>
+            <p className="text-xs text-ink/60">O jogador que reuniu mais votos dos pais</p>
           </div>
         )}
 
