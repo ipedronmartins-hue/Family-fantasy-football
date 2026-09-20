@@ -87,7 +87,6 @@ export default async function AdminMatchPage({
           players={roster}
           initialHomeGoals={match.home_goals}
           initialAwayGoals={match.away_goals}
-          initialMvp={match.man_of_the_match_id}
           initialGoals={(goals ?? []).map((g) => ({
             id: g.id,
             scorerId: g.scorer_id,

@@ -48,7 +48,7 @@ export function MotmVote({
       <h2 className="mb-1 font-display text-sm font-semibold text-ink">
         Vota no jogador da jornada
       </h2>
-      <p className="mb-3 text-xs text-ink/50">O teu voto, entre os pais — separado do Homem do Jogo oficial.</p>
+      <p className="mb-3 text-xs text-ink/50">O teu voto conta para decidir o Homem do Jogo.</p>
       <div className="flex flex-wrap gap-1.5">
         {players.map((p) => (
           <button

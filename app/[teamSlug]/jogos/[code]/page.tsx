@@ -62,6 +62,7 @@ export default async function MatchSummaryPage({
 
   const status = (match.status as "scheduled" | "live" | "finished") ?? "scheduled";
   const played = status !== "scheduled";
+  const mvpVotes = voteTally?.find((v) => v.player_id === match.man_of_the_match_id)?.votes ?? 0;
 
   let myPrediction: {
     predicted_home_goals: number | null;
@@ -135,7 +136,8 @@ export default async function MatchSummaryPage({
             />
             {mvp && (
               <p className="-mt-2 text-center text-sm text-ink/60">
-                ⭐ Homem do Jogo (oficial): {mvp.name}
+                ⭐ Homem do Jogo: {mvp.name}
+                {mvpVotes > 0 ? ` (${mvpVotes} ${mvpVotes === 1 ? "voto" : "votos"} dos pais)` : ""}
               </p>
             )}
 

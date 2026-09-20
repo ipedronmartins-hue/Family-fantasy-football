@@ -19,7 +19,6 @@ export function AdminMatchForm({
   players,
   initialHomeGoals,
   initialAwayGoals,
-  initialMvp,
   initialGoals,
   initialLocked,
   kickoffAt,
@@ -33,7 +32,6 @@ export function AdminMatchForm({
   players: Player[];
   initialHomeGoals: number | null;
   initialAwayGoals: number | null;
-  initialMvp: string | null;
   initialGoals: GoalRow[];
   initialLocked: boolean;
   kickoffAt: string;
@@ -48,7 +46,6 @@ export function AdminMatchForm({
   const [liveAway, setLiveAway] = useState(initialAwayGoals ?? 0);
   const [homeGoals, setHomeGoals] = useState(initialHomeGoals?.toString() ?? "");
   const [awayGoals, setAwayGoals] = useState(initialAwayGoals?.toString() ?? "");
-  const [mvp, setMvp] = useState(initialMvp ?? "");
   const [goals, setGoals] = useState<GoalRow[]>(initialGoals);
   const [newScorer, setNewScorer] = useState("");
   const [newAssist, setNewAssist] = useState("");
@@ -158,7 +155,6 @@ export function AdminMatchForm({
       .update({
         home_goals: homeGoals === "" ? null : Number(homeGoals),
         away_goals: awayGoals === "" ? null : Number(awayGoals),
-        man_of_the_match_id: mvp || null,
       })
       .eq("id", matchId);
     setBusy(false);
@@ -340,19 +336,9 @@ export function AdminMatchForm({
             className="w-16 rounded-xl border border-line px-3 py-2 text-center"
           />
         </div>
-        <label className="mb-1.5 block text-xs font-semibold text-ink/70">Homem do Jogo</label>
-        <select
-          value={mvp}
-          onChange={(e) => setMvp(e.target.value)}
-          className="mb-3 w-full rounded-xl border border-line px-3 py-2"
-        >
-          <option value="">Escolher jogador</option>
-          {players.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
+        <p className="mb-3 text-xs text-ink/40">
+          O Homem do Jogo é sempre quem tiver mais votos dos pais — não se escolhe aqui.
+        </p>
         <button
           onClick={saveResult}
           disabled={busy}
