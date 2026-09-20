@@ -6,6 +6,7 @@ import { getTeamBySlug } from "@/lib/team";
 import { getRoster } from "@/db/queries/players";
 import { formatMatchDate } from "@/lib/format";
 import { MotmVote } from "@/components/MotmVote";
+import { isVotingClosed } from "@/lib/deadline";
 import { LiveMatchScore } from "@/components/LiveMatchScore";
 
 export const dynamic = "force-dynamic";
@@ -189,7 +190,12 @@ export default async function MatchSummaryPage({
               )}
             </div>
 
-            <MotmVote matchId={match.id} players={roster} initialVote={myVote} />
+            <MotmVote
+              matchId={match.id}
+              players={roster}
+              initialVote={myVote}
+              closed={isVotingClosed(match.kickoff_at)}
+            />
 
             {voteTally && voteTally.length > 0 && (
               <div className="rounded-2xl border border-line bg-white p-4">

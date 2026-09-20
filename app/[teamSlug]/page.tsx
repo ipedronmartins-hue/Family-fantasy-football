@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { MatchCard } from "@/components/MatchCard";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { MotmVote } from "@/components/MotmVote";
+import { isVotingClosed } from "@/lib/deadline";
 
 export const dynamic = "force-dynamic";
 
@@ -92,14 +93,14 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
   if (hasTeam) {
     const { data: lastFinished } = await supabase
       .from("matches")
-      .select("id, matchday")
+      .select("id, matchday, kickoff_at")
       .eq("season_id", team.seasonId)
       .eq("status", "finished")
       .order("kickoff_at", { ascending: false })
       .limit(1)
       .maybeSingle();
 
-    if (lastFinished) {
+    if (lastFinished && !isVotingClosed(lastFinished.kickoff_at)) {
       const { data: vote } = await supabase
         .from("motm_votes")
         .select("player_id")

@@ -9,15 +9,31 @@ interface LeaderboardRow {
   total_points: number;
 }
 
+interface MotmTallyRow {
+  player_id: string;
+  player_name: string;
+  shirt_number: number;
+  awards: number;
+}
+
 export default async function ClassificacaoPage({ params }: { params: Promise<{ teamSlug: string }> }) {
   const { teamSlug } = await params;
   const team = await getTeamBySlug(teamSlug);
 
-  const { data, error } = await supabase
-    .from("season_leaderboard")
-    .select("fantasy_team_id, team_name, total_points")
-    .eq("season_id", team.seasonId)
-    .order("total_points", { ascending: false });
+  const [{ data, error }, { data: motmData }] = await Promise.all([
+    supabase
+      .from("season_leaderboard")
+      .select("fantasy_team_id, team_name, total_points")
+      .eq("season_id", team.seasonId)
+      .order("total_points", { ascending: false }),
+    supabase
+      .from("motm_season_tally")
+      .select("player_id, player_name, shirt_number, awards")
+      .eq("season_id", team.seasonId)
+      .order("awards", { ascending: false }),
+  ]);
+
+  const motmTally = (motmData as MotmTallyRow[] | null) ?? [];
 
   const rawStandings = (data as LeaderboardRow[] | null) ?? [];
   const hasRealPoints = rawStandings.some((s) => s.total_points > 0);
@@ -67,6 +83,34 @@ export default async function ClassificacaoPage({ params }: { params: Promise<{ 
               </li>
             ))}
           </ul>
+        )}
+
+        {motmTally.length > 0 && (
+          <>
+            <h2 className="mb-2 mt-8 font-display text-lg font-semibold text-ink">
+              🏆 Corrida a Jogador do Ano
+            </h2>
+            <p className="mb-3 text-xs text-ink/50">
+              Quem mais vezes for eleito Homem do Jogo pelos pais ao longo da época, é o
+              Jogador do Ano.
+            </p>
+            <ul className="rounded-2xl border border-line bg-white px-4">
+              {motmTally.map((entry, i) => (
+                <li
+                  key={entry.player_id}
+                  className="grid grid-cols-[28px_1fr_auto] items-center gap-2 border-b border-line py-3 text-sm last:border-b-0"
+                >
+                  <span className="font-display font-semibold text-ink/50">{i + 1}</span>
+                  <span className="text-ink">
+                    {entry.shirt_number} {entry.player_name}
+                  </span>
+                  <span className="font-display font-semibold text-gold">
+                    {entry.awards} {entry.awards === 1 ? "vez" : "vezes"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </>
         )}
       </main>
     </div>
