@@ -9,7 +9,7 @@ const LABELS: { key: string; label: string }[] = [
   { key: "exactGoalsGuess", label: "Acertar o nº exato de golos da equipa" },
   { key: "scorerGuess", label: "Acertar o marcador" },
   { key: "assistGuess", label: "Acertar a assistência" },
-  { key: "manOfTheMatchGuess", label: "Acertar o Homem do Jogo" },
+  { key: "manOfTheMatchGuess", label: "Acertar o Homem do Jogo (o jogador mais votado pelos pais)" },
   { key: "startingXIGuess", label: "Por cada titular acertado no 11 provável" },
 ];
 

@@ -186,7 +186,9 @@ export function PredictionForm({
         ))}
       </select>
 
-      <label className="mb-1.5 block text-xs font-semibold text-ink/70">Homem do Jogo</label>
+      <label className="mb-1.5 block text-xs font-semibold text-ink/70">
+        Homem do Jogo (o jogador mais votado pelos pais)
+      </label>
       <select
         value={mvp}
         onChange={(e) => setMvp(e.target.value)}
