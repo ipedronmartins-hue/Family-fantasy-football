@@ -15,7 +15,7 @@ export function FixedCostButton({ seasonId }: { seasonId: string }) {
     const { error } = await supabase.rpc("register_fixed_cost", {
       p_season_id: seasonId,
       p_category: "servidor",
-      p_description: `Alojamento da plataforma (Vercel + Supabase) · ${month}`,
+      p_description: `Alojamento da plataforma (Vercel + Supabase) + ferramentas de IA para cálculos e pontuação · ${month}`,
       p_amount: 20,
     });
     setBusy(false);
