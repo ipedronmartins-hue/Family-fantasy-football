@@ -6,7 +6,7 @@ const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0YWhtamNsa2FhanhkY2xoZGR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4NTcyNDUsImV4cCI6MjEwNDQzMzI0NX0.WdJojeZKn6Okghh0GV0coZ8uJsSC9Sz_f9QrxJaCK2s";
 
 // Paths that are platform-level, not owned by any one team.
-const RESERVED_SLUGS = new Set(["login", "auth", "bloqueado", "registar-equipa", "superadmin", ""]);
+const RESERVED_SLUGS = new Set(["login", "conta", "auth", "bloqueado", "registar-equipa", "superadmin", ""]);
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });

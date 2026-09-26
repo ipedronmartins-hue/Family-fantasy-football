@@ -319,6 +319,12 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
           </Link>
         )}
 
+        {hasTeam && (
+          <Link href="/conta" className="mb-3 block text-center text-xs font-semibold text-blue">
+            A minha conta · mudar palavra-passe
+          </Link>
+        )}
+
         <Link href="/" className="block pb-2 text-center text-xs text-ink/40">
           Sobre a plataforma
         </Link>

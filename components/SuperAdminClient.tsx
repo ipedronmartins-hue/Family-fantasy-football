@@ -9,6 +9,7 @@ export interface TeamRow {
   clubName: string;
   slug: string;
   format: string;
+  adminInvite: { email: string; code: string; used: boolean } | null;
   status: "active" | "blocked";
   paid: boolean;
   amount: number | null;
@@ -62,6 +63,18 @@ export function SuperAdminClient({ month, teams }: { month: string; teams: TeamR
                 <p className="text-xs text-ink/50">
                   {row.clubName} · /{row.slug} · {row.format.replace("fut", "Fut")}
                 </p>
+                {row.adminInvite && (
+                  <p className="text-xs text-ink/50">
+                    Admin: {row.adminInvite.email} ·{" "}
+                    {row.adminInvite.used ? (
+                      <span className="text-blue">ativado ✓</span>
+                    ) : (
+                      <>
+                        código <span className="font-mono font-semibold text-ink">{row.adminInvite.code}</span>
+                      </>
+                    )}
+                  </p>
+                )}
               </div>
               <span className={`text-xs font-semibold ${row.status === "active" ? "text-blue" : "text-red"}`}>
                 {row.status === "active" ? "🟢 Ativa" : "🔴 Bloqueada"}

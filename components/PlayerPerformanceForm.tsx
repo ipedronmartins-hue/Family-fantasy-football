@@ -58,16 +58,17 @@ export function PlayerPerformanceForm({
     setBusy(true);
     setMessage(null);
     const supabase = createBrowserSupabase();
-    for (const [playerId, tier] of Object.entries(minutes)) {
-      await supabase
-        .from("match_lineups")
-        .upsert(
-          { match_id: matchId, player_id: playerId, minutes_played: tier, started: tier >= 30 },
-          { onConflict: "match_id,player_id" }
-        );
-    }
+    // Only minutes are written here -- who started is set in "Onze real".
+    const { error } = await supabase.from("match_lineups").upsert(
+      Object.entries(minutes).map(([playerId, tier]) => ({
+        match_id: matchId,
+        player_id: playerId,
+        minutes_played: tier,
+      })),
+      { onConflict: "match_id,player_id" }
+    );
     setBusy(false);
-    setMessage("Minutos guardados.");
+    setMessage(error ? error.message : "Minutos guardados.");
   }
 
   async function addCard() {

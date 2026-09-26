@@ -35,7 +35,7 @@ export default function RegistarEquipaPage() {
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-5 pb-20 text-center">
         <p className="font-display text-2xl font-semibold text-ink">Pedido enviado.</p>
         <p className="mt-2 text-sm text-ink/60">
-          Entramos em contacto convosco para combinar os detalhes e a mensalidade de 20 €.
+          Entramos em contacto convosco para combinar os detalhes e o custo fixo de 20 €/mês, que sai do fundo da equipa.
         </p>
       </div>
     );
@@ -47,7 +47,7 @@ export default function RegistarEquipaPage() {
       <h1 className="mt-1 font-display text-3xl font-semibold text-ink">Trazer a tua equipa</h1>
       <p className="mt-2 text-sm text-ink/60">
         A tua equipa pode ter a sua própria versão do Family Fantasy Formação, com o vosso
-        plantel e calendário, por 20 €/mês.
+        plantel e calendário. Custo fixo de 20 €/mês, pago pelo fundo da equipa.
       </p>
       <a href="/" className="mt-2 inline-block text-xs font-semibold text-blue">
         Porque criámos isto →

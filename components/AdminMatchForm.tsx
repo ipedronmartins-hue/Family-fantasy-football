@@ -128,22 +128,24 @@ export function AdminMatchForm({
     setBusy(true);
     setMessage(null);
     const supabase = createBrowserSupabase();
-    await supabase.from("match_lineups").delete().eq("match_id", matchId);
-    if (realLineup.size > 0) {
-      const rows = Array.from(realLineup).map((playerId) => ({
-        match_id: matchId,
-        player_id: playerId,
-        started: true,
-      }));
-      const { error } = await supabase.from("match_lineups").insert(rows);
+    // Never delete rows here: they also hold each player's minutes played.
+    const selectedIds = Array.from(realLineup);
+    if (selectedIds.length > 0) {
+      const { error } = await supabase.from("match_lineups").upsert(
+        selectedIds.map((playerId) => ({ match_id: matchId, player_id: playerId, started: true })),
+        { onConflict: "match_id,player_id" }
+      );
       if (error) {
         setBusy(false);
         setMessage(error.message);
         return;
       }
     }
+    let clear = supabase.from("match_lineups").update({ started: false }).eq("match_id", matchId);
+    if (selectedIds.length > 0) clear = clear.not("player_id", "in", `(${selectedIds.join(",")})`);
+    const { error: clearError } = await clear;
     setBusy(false);
-    setMessage("Onze real guardado.");
+    setMessage(clearError ? clearError.message : "Onze real guardado.");
   }
 
   async function saveResult() {

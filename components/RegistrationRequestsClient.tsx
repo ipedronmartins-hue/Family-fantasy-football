@@ -57,7 +57,7 @@ export function RegistrationRequestsClient({ requests }: { requests: RequestRow[
             </p>
             {result?.id === r.id ? (
               <p className="text-xs font-semibold text-blue">
-                ✅ Aprovado — endereço: /{result.slug}
+                ✅ Aprovado — endereço: /{result.slug}. O código de admin aparece na lista de equipas acima.
               </p>
             ) : (
               <button

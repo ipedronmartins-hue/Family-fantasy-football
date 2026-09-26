@@ -1,4 +1,5 @@
 import { getTeamBySlug } from "@/lib/team";
+import { ClaimAdminForm } from "@/components/ClaimAdminForm";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,7 @@ export default async function PendentePage({ params }: { params: Promise<{ teamS
       <p className="mt-4 text-xs text-ink/50">
         Já falaste com o administrador da equipa? Se sim, é só questão de tempo.
       </p>
+      <ClaimAdminForm teamSlug={teamSlug} />
     </div>
   );
 }

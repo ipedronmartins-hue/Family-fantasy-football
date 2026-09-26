@@ -67,13 +67,13 @@ export default async function HomePage() {
       <h2 className="mt-6 font-display text-lg font-semibold text-ink">Preços, sem letra pequena</h2>
       <div className="mt-2 rounded-2xl border border-line bg-white p-4">
         <p className="text-sm text-ink/80">
-          <strong>20 €/mês por equipa</strong> — é o que a equipa paga à plataforma, e cobre
-          apenas o alojamento e a manutenção. É o único valor que sai da equipa para fora.
+          As famílias contribuem com 3 a 5 €/mês para o fundo da equipa. Desse fundo saem{" "}
+          <strong>20 €/mês</strong> como custo fixo — servidor e ferramentas de IA que calculam
+          a pontuação. Fica registado no fundo, à vista de todos.
         </p>
         <p className="mt-3 text-sm text-ink/80">
-          O que cada equipa pede aos seus próprios pais (normalmente um pequeno contributo
-          mensal) <strong>fica inteiramente com a equipa</strong>, gerido pelo admin dela —
-          nunca passa pela plataforma.
+          <strong>Todo o resto fica com a equipa</strong>, gerido pelo administrador dela —
+          bolas, material, lanches, torneios, o que for preciso.
         </p>
       </div>
 
