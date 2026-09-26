@@ -1,0 +1,3 @@
+-- Migração só de dados: atualizou nomes e números do plantel do Gondomar.
+-- Conteúdo omitido de propósito: são nomes de menores e o repositório é público.
+-- Não afeta a estrutura da base de dados.
