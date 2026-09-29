@@ -44,7 +44,7 @@ export function MatchCard({
         <Link
           href={
             match.status === "scheduled"
-              ? `/${teamSlug}/prever?jornada=${match.code}`
+              ? `/${teamSlug}/jornada?jornada=${match.code}`
               : `/${teamSlug}/jogos/${match.code}`
           }
           className={`mt-3 block rounded-xl py-2.5 text-center text-sm font-semibold ${

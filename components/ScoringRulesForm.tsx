@@ -21,7 +21,7 @@ const FIELDS: { key: keyof Omit<ScoringRules, "bonus">; label: string }[] = [
   { key: "scorerGuess", label: "Acertar o marcador" },
   { key: "assistGuess", label: "Acertar a assistência" },
   { key: "manOfTheMatchGuess", label: "Acertar o Homem do Jogo (o jogador mais votado pelos pais)" },
-  { key: "startingXIGuess", label: "Por cada titular acertado no 11 provável" },
+  { key: "startingXIGuess", label: "Por cada jogador do teu onze que seja mesmo titular" },
 ];
 
 export function ScoringRulesForm({ seasonId, initial }: { seasonId: string; initial: ScoringRules }) {

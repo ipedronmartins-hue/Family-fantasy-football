@@ -45,7 +45,7 @@ export function FixtureRow({
         </p>
       </div>
       <Link
-        href={played ? `/${teamSlug}/jogos/${match.code}` : `/${teamSlug}/prever?jornada=${match.code}`}
+        href={played ? `/${teamSlug}/jogos/${match.code}` : `/${teamSlug}/jornada?jornada=${match.code}`}
         className={`shrink-0 rounded-lg px-3 py-2 text-xs font-semibold ${
           isLive ? "bg-red text-white" : "bg-blue/10 text-blue"
         }`}

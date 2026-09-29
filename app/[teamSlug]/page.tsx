@@ -52,8 +52,8 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
       ? `${base}/pendente`
       : parent === "suspended"
       ? `${base}/suspenso`
-      : `${base}/equipa`;
-  const ctaLabel = hasTeam ? "Ver a minha equipa" : "Montar a minha equipa";
+      : `${base}/jornada`;
+  const ctaLabel = hasTeam ? "Fazer a minha jornada" : "Montar a minha equipa";
 
   const monthStart = new Date();
   monthStart.setDate(1);

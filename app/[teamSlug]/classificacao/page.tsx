@@ -35,6 +35,18 @@ export default async function ClassificacaoPage({ params }: { params: Promise<{ 
 
   const motmTally = (motmData as MotmTallyRow[] | null) ?? [];
 
+  // Pódio: até 3 escalões por nº de eleições; empatados ficam no mesmo escalão.
+  const podiumTiers: string[][] = [];
+  let lastAwards: number | null = null;
+  for (const row of motmTally) {
+    if (row.awards !== lastAwards) {
+      if (podiumTiers.length === 3) break;
+      podiumTiers.push([]);
+      lastAwards = row.awards;
+    }
+    podiumTiers[podiumTiers.length - 1].push(row.player_name);
+  }
+
   const rawStandings = (data as LeaderboardRow[] | null) ?? [];
   const hasRealPoints = rawStandings.some((s) => s.total_points > 0);
   const standings = hasRealPoints ? rawStandings : [];
@@ -85,31 +97,26 @@ export default async function ClassificacaoPage({ params }: { params: Promise<{ 
           </ul>
         )}
 
-        {motmTally.length > 0 && (
+        {podiumTiers.length > 0 && (
           <>
             <h2 className="mb-2 mt-8 font-display text-lg font-semibold text-ink">
               🏆 Corrida a Jogador do Ano
             </h2>
             <p className="mb-3 text-xs text-ink/50">
               Quem mais vezes for eleito Homem do Jogo pelos pais ao longo da época, é o
-              Jogador do Ano.
+              Jogador do Ano. Aqui só aparece o pódio.
             </p>
-            <ul className="rounded-2xl border border-line bg-white px-4">
-              {motmTally.map((entry, i) => (
-                <li
-                  key={entry.player_id}
-                  className="grid grid-cols-[28px_1fr_auto] items-center gap-2 border-b border-line py-3 text-sm last:border-b-0"
+            <div className="space-y-2">
+              {podiumTiers.map((tier, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 rounded-2xl border border-line bg-white p-3"
                 >
-                  <span className="font-display font-semibold text-ink/50">{i + 1}</span>
-                  <span className="text-ink">
-                    {entry.shirt_number} {entry.player_name}
-                  </span>
-                  <span className="font-display font-semibold text-gold">
-                    {entry.awards} {entry.awards === 1 ? "vez" : "vezes"}
-                  </span>
-                </li>
+                  <span className="text-2xl">{["🥇", "🥈", "🥉"][i]}</span>
+                  <span className="text-sm font-semibold text-ink">{tier.join(" · ")}</span>
+                </div>
               ))}
-            </ul>
+            </div>
           </>
         )}
       </main>
