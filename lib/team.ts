@@ -11,13 +11,14 @@ export interface TeamContext {
   seasonLabel: string;
   platformStatus: "active" | "blocked";
   format: TeamFormat;
+  sponsorName: string | null;
 }
 
 /** Looks up a team by its URL slug. Calls notFound() if it doesn't exist. */
 export async function getTeamBySlug(slug: string): Promise<TeamContext> {
   const { data, error } = await supabase
     .from("teams")
-    .select("id, name, slug, platform_status, format, clubs(name), seasons(id, label)")
+    .select("id, name, slug, platform_status, format, sponsor_name, clubs(name), seasons(id, label)")
     .eq("slug", slug)
     .maybeSingle();
 
@@ -36,5 +37,6 @@ export async function getTeamBySlug(slug: string): Promise<TeamContext> {
     seasonLabel: season.label,
     platformStatus: data.platform_status as "active" | "blocked",
     format: data.format as TeamFormat,
+    sponsorName: (data.sponsor_name as string | null) ?? null,
   };
 }

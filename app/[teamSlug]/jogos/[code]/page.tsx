@@ -138,6 +138,7 @@ export default async function MatchSummaryPage({
             {mvp && (
               <p className="-mt-2 text-center text-sm text-ink/60">
                 ⭐ Homem do Jogo: {mvp.name}
+                {team.sponsorName ? ` · oferecido por ${team.sponsorName}` : ""}
                 {mvpVotes > 0 ? ` (${mvpVotes} ${mvpVotes === 1 ? "voto" : "votos"} dos pais)` : ""}
               </p>
             )}

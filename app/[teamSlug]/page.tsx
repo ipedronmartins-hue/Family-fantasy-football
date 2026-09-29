@@ -175,6 +175,9 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
           <div className="mb-4 rounded-2xl border border-gold bg-gold/10 p-4 text-center">
             <p className="text-xs font-semibold text-ink/60">⭐ HOMEM DO JOGO</p>
             <p className="mt-1 font-display text-lg font-semibold text-ink">{homemDoJogo.name}</p>
+            {team.sponsorName && (
+              <p className="mt-0.5 text-[11px] font-semibold text-gold">Oferecido por {team.sponsorName}</p>
+            )}
             <p className="text-xs text-ink/60">O jogador que reuniu mais votos dos pais</p>
           </div>
         )}
