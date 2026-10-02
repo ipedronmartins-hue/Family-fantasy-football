@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createBrowserSupabase } from "@/lib/supabase/client";
 import { SITE_URL } from "@/lib/site";
 
@@ -14,14 +15,35 @@ export interface TeamRow {
   status: "active" | "blocked";
   paid: boolean;
   amount: number | null;
+  paymentId: string | null;
 }
 
 export function SuperAdminClient({ month, teams }: { month: string; teams: TeamRow[] }) {
+  const router = useRouter();
   const [rows, setRows] = useState(teams);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
+  async function revokePaid(row: TeamRow) {
+    if (!row.paymentId) return;
+    const ok = window.confirm(`Anular o pagamento de 20 € de ${row.clubName} ${row.teamName}?\n\nFica registado no histórico.`);
+    if (!ok) return;
+    setBusyId(row.teamId);
+    setMessage(null);
+    const supabase = createBrowserSupabase();
+    const { error } = await supabase.rpc("revoke_platform_payment", { p_payment_id: row.paymentId, p_reason: null });
+    setBusyId(null);
+    if (error) {
+      setMessage("Não foi possível anular. Tenta outra vez.");
+      return;
+    }
+    router.refresh();
+  }
+
   async function markPaid(teamId: string) {
+    const row = rows.find((r) => r.teamId === teamId);
+    const ok = window.confirm(`Marcar 20 € como pagos por ${row?.clubName} ${row?.teamName}?`);
+    if (!ok) return;
     setBusyId(teamId);
     setMessage(null);
     const supabase = createBrowserSupabase();
@@ -36,7 +58,7 @@ export function SuperAdminClient({ month, teams }: { month: string; teams: TeamR
       setMessage(error.message);
       return;
     }
-    setRows((prev) => prev.map((r) => (r.teamId === teamId ? { ...r, paid: true, amount: 20 } : r)));
+    router.refresh();
   }
 
   async function toggleStatus(teamId: string, current: "active" | "blocked") {
@@ -105,9 +127,18 @@ export function SuperAdminClient({ month, teams }: { month: string; teams: TeamR
             </div>
             <div className="flex gap-2">
               {row.paid ? (
-                <span className="flex-1 rounded-lg bg-blue/10 py-1.5 text-center text-xs font-semibold text-blue">
-                  ✅ 20€ pagos este mês
-                </span>
+                <>
+                  <span className="flex-1 rounded-lg bg-blue/10 py-1.5 text-center text-xs font-semibold text-blue">
+                    ✅ 20€ pagos este mês
+                  </span>
+                  <button
+                    onClick={() => revokePaid(row)}
+                    disabled={busyId === row.teamId}
+                    className="rounded-lg border border-red/40 px-3 py-1.5 text-xs font-semibold text-red disabled:opacity-50"
+                  >
+                    Anular
+                  </button>
+                </>
               ) : (
                 <button
                   onClick={() => markPaid(row.teamId)}

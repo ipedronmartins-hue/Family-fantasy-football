@@ -3,6 +3,7 @@ import { getCurrentParent } from "@/lib/auth";
 import { getTeamBySlug } from "@/lib/team";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { PaymentsClient, FamilyRow } from "@/components/PaymentsClient";
+import { FinancialLog, LogRow } from "@/components/FinancialLog";
 import { FundEntryForm, FundEntryRow } from "@/components/FundEntryForm";
 
 export const dynamic = "force-dynamic";
@@ -24,16 +25,28 @@ export default async function AdminPaymentsPage({ params }: { params: Promise<{ 
   const monthLabel = monthStart.toLocaleDateString("pt-PT", { month: "long", year: "numeric" });
 
   const supabase = await createServerSupabase();
-  const [{ data: teams }, { data: payments }, { data: fundEntries }] = await Promise.all([
+  const [{ data: teams }, { data: payments }, { data: fundEntries }, { data: linkedRows }, { data: logRows }] = await Promise.all([
     supabase.from("fantasy_teams").select("id, name").eq("season_id", team.seasonId).order("name"),
-    supabase.from("family_payments").select("fantasy_team_id, amount, method").eq("season_id", team.seasonId).eq("month", monthKey),
+    supabase.from("family_payments").select("id, fantasy_team_id, amount, method").eq("season_id", team.seasonId).eq("month", monthKey),
     supabase
       .from("team_fund_entries")
       .select("id, entry_type, amount, description, category")
       .eq("season_id", team.seasonId)
       .order("created_at", { ascending: false })
       .limit(10),
+    supabase
+      .from("family_payments")
+      .select("fund_entry_id")
+      .eq("season_id", team.seasonId)
+      .not("fund_entry_id", "is", null),
+    supabase
+      .from("financial_audit_log")
+      .select("action, details, reason, done_at")
+      .eq("season_id", team.seasonId)
+      .order("done_at", { ascending: false })
+      .limit(8),
   ]);
+  const linkedIds = new Set((linkedRows ?? []).map((r) => r.fund_entry_id));
 
   const paidMap = new Map((payments ?? []).map((p) => [p.fantasy_team_id, p]));
   const families: FamilyRow[] = (teams ?? []).map((t) => ({
@@ -42,6 +55,7 @@ export default async function AdminPaymentsPage({ params }: { params: Promise<{ 
     paid: paidMap.has(t.id),
     amount: paidMap.get(t.id)?.amount ?? null,
     method: paidMap.get(t.id)?.method ?? null,
+    paymentId: paidMap.get(t.id)?.id ?? null,
   }));
 
   const entries: FundEntryRow[] = (fundEntries ?? []).map((e) => ({
@@ -50,6 +64,7 @@ export default async function AdminPaymentsPage({ params }: { params: Promise<{ 
     amount: e.amount,
     description: e.description,
     category: e.category,
+    linked: linkedIds.has(e.id),
   }));
 
   return (
@@ -65,10 +80,16 @@ export default async function AdminPaymentsPage({ params }: { params: Promise<{ 
             Ainda não há equipas Fantasy criadas.
           </div>
         ) : (
-          <PaymentsClient month={monthKey} families={families} />
+          <PaymentsClient
+            key={families.map((f) => `${f.fantasyTeamId}${f.paymentId ?? ""}`).join("|")}
+            month={monthKey}
+            families={families}
+          />
         )}
 
-        <FundEntryForm seasonId={team.seasonId} entries={entries} />
+        <FundEntryForm key={entries.map((e) => e.id).join("|")} seasonId={team.seasonId} entries={entries} />
+
+        <FinancialLog rows={(logRows ?? []) as LogRow[]} />
       </main>
     </div>
   );

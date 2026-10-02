@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createBrowserSupabase } from "@/lib/supabase/client";
 
 export interface FamilyRow {
@@ -9,6 +10,7 @@ export interface FamilyRow {
   paid: boolean;
   amount: number | null;
   method: string | null;
+  paymentId: string | null;
 }
 
 const METHOD_LABELS: Record<string, string> = { mbway: "MB WAY", dinheiro: "Dinheiro" };
@@ -20,6 +22,7 @@ export function PaymentsClient({
   month: string; // YYYY-MM-01
   families: FamilyRow[];
 }) {
+  const router = useRouter();
   const [rows, setRows] = useState(families);
   const [amounts, setAmounts] = useState<Record<string, string>>(
     Object.fromEntries(families.map((f) => [f.fantasyTeamId, "5"]))
@@ -33,6 +36,11 @@ export function PaymentsClient({
       setMessage("Indica um valor válido.");
       return;
     }
+    const row = rows.find((r) => r.fantasyTeamId === fantasyTeamId);
+    const ok = window.confirm(
+      `Registar ${amount} € de «${row?.teamName}» (${METHOD_LABELS[method]})?\n\nO valor entra sozinho no fundo da equipa.`
+    );
+    if (!ok) return;
     setBusyId(fantasyTeamId);
     setMessage(null);
     const supabase = createBrowserSupabase();
@@ -47,9 +55,28 @@ export function PaymentsClient({
       setMessage(error.message);
       return;
     }
-    setRows((prev) =>
-      prev.map((r) => (r.fantasyTeamId === fantasyTeamId ? { ...r, paid: true, amount, method } : r))
+    router.refresh();
+  }
+
+  async function revoke(row: FamilyRow) {
+    if (!row.paymentId) return;
+    const ok = window.confirm(
+      `Anular o contributo de «${row.teamName}» (${row.amount} €)?\n\nO valor também sai do fundo da equipa. Fica registado no histórico.`
     );
+    if (!ok) return;
+    setBusyId(row.fantasyTeamId);
+    setMessage(null);
+    const supabase = createBrowserSupabase();
+    const { error } = await supabase.rpc("revoke_family_payment", {
+      p_payment_id: row.paymentId,
+      p_reason: null,
+    });
+    setBusyId(null);
+    if (error) {
+      setMessage("Não foi possível anular. Tenta outra vez.");
+      return;
+    }
+    router.refresh();
   }
 
   const paidCount = rows.filter((r) => r.paid).length;
@@ -67,9 +94,18 @@ export function PaymentsClient({
           >
             <span className="text-ink">{row.teamName}</span>
             {row.paid ? (
-              <span className="text-xs font-semibold text-blue">
-                ✅ {row.amount} € · {METHOD_LABELS[row.method ?? ""] ?? row.method}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-blue">
+                  ✅ {row.amount} € · {METHOD_LABELS[row.method ?? ""] ?? row.method}
+                </span>
+                <button
+                  onClick={() => revoke(row)}
+                  disabled={busyId === row.fantasyTeamId}
+                  className="rounded-lg border border-red/40 px-2 py-1 text-[11px] font-semibold text-red disabled:opacity-50"
+                >
+                  Anular
+                </button>
+              </div>
             ) : (
               <div className="flex items-center gap-1.5">
                 <input

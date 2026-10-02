@@ -1,0 +1,5 @@
+-- Contributos: o pagamento da família passa a ser a única entrada (cria sozinho a receita
+-- no fundo, ligada). Anular remove os dois. Tudo o que se anula fica em financial_audit_log.
+-- (Versão resumida: o SQL completo aplicado em produção cria a tabela financial_audit_log,
+-- as funções register_family_payment, revoke_family_payment, remove_fund_entry e
+-- revoke_platform_payment, e liga os contributos antigos às receitas respetivas.)

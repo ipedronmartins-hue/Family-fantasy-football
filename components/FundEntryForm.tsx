@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createBrowserSupabase } from "@/lib/supabase/client";
 
 export interface FundEntryRow {
@@ -9,6 +10,7 @@ export interface FundEntryRow {
   amount: number;
   description: string | null;
   category: string;
+  linked: boolean;
 }
 
 const CATEGORY_OPTIONS = [
@@ -21,7 +23,8 @@ const CATEGORY_OPTIONS = [
 ];
 
 export function FundEntryForm({ seasonId, entries }: { seasonId: string; entries: FundEntryRow[] }) {
-  const [rows, setRows] = useState(entries);
+  const router = useRouter();
+  const rows = entries;
   const [entryType, setEntryType] = useState<"receita" | "despesa">("despesa");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
@@ -50,31 +53,33 @@ export function FundEntryForm({ seasonId, entries }: { seasonId: string; entries
       setMessage(error.message);
       return;
     }
-    setRows((prev) => [
-      { id: crypto.randomUUID(), entryType, amount: value, description: description || null, category },
-      ...prev,
-    ]);
     setAmount("");
     setDescription("");
     setCategory("outros");
+    router.refresh();
   }
 
-  async function removeEntry(id: string) {
+  async function removeEntry(row: FundEntryRow) {
+    const ok = window.confirm(
+      `Remover este movimento (${row.entryType === "receita" ? "+" : "-"}${row.amount.toFixed(2)} €)?\n\nFica registado no histórico.`
+    );
+    if (!ok) return;
     const supabase = createBrowserSupabase();
-    const { error } = await supabase.from("team_fund_entries").delete().eq("id", id);
+    const { error } = await supabase.rpc("remove_fund_entry", { p_entry_id: row.id, p_reason: null });
     if (error) {
-      setMessage(error.message);
+      setMessage("Não foi possível remover. Tenta outra vez.");
       return;
     }
-    setRows((prev) => prev.filter((r) => r.id !== id));
+    router.refresh();
   }
 
   return (
     <div className="rounded-2xl border border-line bg-white p-4">
       <h2 className="mb-1 font-display text-base font-semibold text-ink">Registar movimento</h2>
       <p className="mb-3 text-xs text-ink/50">
-        Só o valor e o tipo são obrigatórios — a nota e a categoria são só para ajudar a
-        organizar, não precisas de detalhar tudo ao cêntimo.
+        Os contributos das famílias entram sozinhos no fundo quando os registas acima — usa
+        «Receita» só para outras entradas (donativos, patrocínio). Só o valor e o tipo são
+        obrigatórios.
       </p>
 
       <div className="mb-3 flex gap-2">
@@ -143,9 +148,13 @@ export function FundEntryForm({ seasonId, entries }: { seasonId: string; entries
                 {r.entryType === "receita" ? "+" : "-"}
                 {r.amount.toFixed(2)} € {r.description ? `— ${r.description}` : ""}
               </span>
-              <button onClick={() => removeEntry(r.id)} className="text-xs font-semibold text-red">
-                remover
-              </button>
+              {r.linked ? (
+                <span className="text-[11px] text-ink/40">contributo</span>
+              ) : (
+                <button onClick={() => removeEntry(r)} className="text-xs font-semibold text-red">
+                  remover
+                </button>
+              )}
             </li>
           ))}
         </ul>
