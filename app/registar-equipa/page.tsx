@@ -31,11 +31,36 @@ export default function RegistarEquipaPage() {
   }
 
   if (status === "sent") {
+    const message = [
+      "Olá! Acabei de pedir a minha equipa no Family Fantasy Formação.",
+      "",
+      `Clube: ${clubName}`,
+      `Escalão: ${teamName}`,
+      `Formato: ${FORMAT_LABELS[format]}`,
+      `Responsável: ${contactName}`,
+      `Email: ${contactEmail}`,
+      contactPhone ? `Telemóvel: ${contactPhone}` : null,
+    ]
+      .filter((line) => line !== null)
+      .join("\n");
     return (
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-5 pb-20 text-center">
         <p className="font-display text-2xl font-semibold text-ink">Pedido enviado.</p>
         <p className="mt-2 text-sm text-ink/60">
-          Entramos em contacto convosco para combinar os detalhes e o custo fixo de 20 €/mês, que sai do fundo da equipa.
+          Para sermos mais rápidos, avisa-nos já por WhatsApp — a mensagem vai preenchida, só tens
+          de carregar em enviar.
+        </p>
+        <a
+          href={`https://wa.me/351913695846?text=${encodeURIComponent(message)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-5 block rounded-xl bg-[#25D366] py-3 text-sm font-semibold text-white"
+        >
+          💬 Avisar por WhatsApp
+        </a>
+        <p className="mt-5 text-xs text-ink/50">
+          Entramos em contacto convosco para combinar os detalhes. O custo fixo é de 20 €/mês e sai
+          do fundo da equipa.
         </p>
       </div>
     );
