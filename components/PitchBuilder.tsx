@@ -4,11 +4,15 @@ import { useState } from "react";
 import { Player } from "@/types/player";
 import { FormationSlot } from "@/config/formations";
 
+type Active = { kind: "pitch" | "bench"; index: number } | null;
+
 export function PitchBuilder({
   slots,
   roster,
   assignments,
   onAssignmentsChange,
+  bench,
+  onBenchChange,
   captain,
   viceCaptain,
   onPickCaptain,
@@ -18,36 +22,40 @@ export function PitchBuilder({
   roster: Player[];
   assignments: (string | null)[];
   onAssignmentsChange: (next: (string | null)[]) => void;
+  bench: (string | null)[];
+  onBenchChange: (next: (string | null)[]) => void;
   captain: string | null;
   viceCaptain: string | null;
   onPickCaptain: (id: string) => void;
   onPickViceCaptain: (id: string) => void;
 }) {
   const byId = new Map(roster.map((p) => [p.id, p]));
-  const assignedIds = new Set(assignments.filter((id): id is string => !!id));
-  const bench = roster.filter((p) => !assignedIds.has(p.id)).sort((a, b) => a.number - b.number);
+  const assignedIds = new Set([...assignments, ...bench].filter((id): id is string => !!id));
+  const available = roster.filter((p) => !assignedIds.has(p.id)).sort((a, b) => a.number - b.number);
 
-  const [activeSlot, setActiveSlot] = useState<number | null>(null);
+  const [active, setActive] = useState<Active>(null);
 
-  function toggleSlot(i: number) {
-    setActiveSlot(activeSlot === i ? null : i);
+  function toggle(kind: "pitch" | "bench", index: number) {
+    setActive(active?.kind === kind && active.index === index ? null : { kind, index });
   }
 
-  function placePlayer(playerId: string) {
-    if (activeSlot === null) return;
-    const next = [...assignments];
-    next[activeSlot] = playerId;
-    onAssignmentsChange(next);
-    setActiveSlot(null);
+  function setAtActive(value: string | null) {
+    if (!active) return;
+    if (active.kind === "pitch") {
+      const next = [...assignments];
+      next[active.index] = value;
+      onAssignmentsChange(next);
+    } else {
+      const next = [...bench];
+      next[active.index] = value;
+      onBenchChange(next);
+    }
+    setActive(null);
   }
 
-  function clearActiveSlot() {
-    if (activeSlot === null) return;
-    const next = [...assignments];
-    next[activeSlot] = null;
-    onAssignmentsChange(next);
-    setActiveSlot(null);
-  }
+  const activeHasPlayer = active
+    ? !!(active.kind === "pitch" ? assignments[active.index] : bench[active.index])
+    : false;
 
   return (
     <div>
@@ -66,11 +74,11 @@ export function PitchBuilder({
           const player = playerId ? byId.get(playerId) : undefined;
           const isCaptain = playerId === captain;
           const isVice = playerId === viceCaptain;
-          const isActive = activeSlot === i;
+          const isActive = active?.kind === "pitch" && active.index === i;
           return (
             <button
               key={i}
-              onClick={() => toggleSlot(i)}
+              onClick={() => toggle("pitch", i)}
               className="absolute -translate-x-1/2 translate-y-1/2"
               style={{ left: `${slot.left}%`, bottom: `${slot.bottom}%` }}
             >
@@ -94,21 +102,55 @@ export function PitchBuilder({
         })}
       </div>
 
-      {activeSlot !== null && (
+      {bench.length > 0 && (
+        <div className="mt-3 rounded-2xl border border-line bg-white p-3">
+          <p className="mb-2 text-xs font-semibold text-ink/70">
+            Banco <span className="font-normal text-ink/50">(opcional) — se um titular não jogar, entra o primeiro suplente que jogue, por esta ordem</span>
+          </p>
+          <div className="flex gap-3">
+            {bench.map((id, i) => {
+              const player = id ? byId.get(id) : undefined;
+              const isActive = active?.kind === "bench" && active.index === i;
+              return (
+                <button key={i} onClick={() => toggle("bench", i)} className="flex flex-col items-center gap-1">
+                  <span
+                    className={`flex h-11 w-11 items-center justify-center rounded-full border-2 font-display text-sm font-bold ${
+                      isActive
+                        ? "border-blue bg-blue/10 text-blue ring-4 ring-blue/20"
+                        : player
+                        ? "border-blue bg-white text-blue"
+                        : "border-dashed border-line bg-white text-ink/40"
+                    }`}
+                  >
+                    {player ? player.number : "+"}
+                  </span>
+                  <span className="text-[10px] font-semibold text-ink/50">{i + 1}º</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {active !== null && (
         <div className="mt-3 rounded-2xl border border-gold bg-gold/10 p-3">
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-xs font-semibold text-ink">Toca no jogador para esse lugar</p>
-            {assignments[activeSlot] && (
-              <button onClick={clearActiveSlot} className="text-xs font-semibold text-red">
+            <p className="text-xs font-semibold text-ink">
+              {active.kind === "bench"
+                ? `Toca no jogador para o ${active.index + 1}º suplente`
+                : "Toca no jogador para esse lugar"}
+            </p>
+            {activeHasPlayer && (
+              <button onClick={() => setAtActive(null)} className="text-xs font-semibold text-red">
                 Remover
               </button>
             )}
           </div>
           <div className="flex flex-wrap gap-1.5">
-            {bench.map((p) => (
+            {available.map((p) => (
               <button
                 key={p.id}
-                onClick={() => placePlayer(p.id)}
+                onClick={() => setAtActive(p.id)}
                 className="flex items-center gap-1.5 rounded-full border border-line bg-white px-2.5 py-1.5 text-xs font-semibold text-ink"
               >
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-line text-[10px]">
@@ -117,16 +159,16 @@ export function PitchBuilder({
                 {p.name}
               </button>
             ))}
-            {bench.length === 0 && (
-              <p className="text-xs text-ink/40">Todos os jogadores já estão em campo.</p>
+            {available.length === 0 && (
+              <p className="text-xs text-ink/40">Todos os jogadores já estão no onze ou no banco.</p>
             )}
           </div>
         </div>
       )}
 
-      {activeSlot === null && (
+      {active === null && (
         <p className="mt-3 text-center text-xs text-ink/50">
-          Toca num lugar do campo para escolher quem lá joga.
+          Toca num lugar do campo (ou do banco) para escolher quem lá joga.
         </p>
       )}
 

@@ -17,6 +17,14 @@ export const FORMAT_SQUAD_SIZE: Record<TeamFormat, number> = {
   fut11: 11,
 };
 
+/** Suplentes (banco, opcional) para cada formato. */
+export const FORMAT_BENCH_SIZE: Record<TeamFormat, number> = {
+  fut5: 2,
+  fut7: 3,
+  fut9: 3,
+  fut11: 3,
+};
+
 export interface FormationSlot {
   group: PositionGroup;
   /** Percentage position within the pitch container. */

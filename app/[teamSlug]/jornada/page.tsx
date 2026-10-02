@@ -8,7 +8,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { isPredictionLocked } from "@/lib/deadline";
 import { formatMatchDate } from "@/lib/format";
 import { JornadaClient, InitialGuess } from "@/components/JornadaClient";
-import { FORMAT_SQUAD_SIZE, defaultFormationFor } from "@/config/formations";
+import { defaultFormationFor } from "@/config/formations";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +27,6 @@ export default async function JornadaPage({
   if (parent === "suspended") redirect(`${base}/suspenso`);
 
   const team = await getTeamBySlug(teamSlug);
-  const squadSize = FORMAT_SQUAD_SIZE[team.format];
   const [match, roster] = await Promise.all([
     jornada ? ((await getFixtureByCode(team.seasonId, jornada)) ?? getNextFixture(team.seasonId)) : getNextFixture(team.seasonId),
     getRoster(team.seasonId),
@@ -56,7 +55,7 @@ export default async function JornadaPage({
     supabase.from("matches").select("locked_at").eq("id", match.id).maybeSingle(),
     supabase
       .from("fantasy_lineups")
-      .select("player_id, is_captain, is_vice_captain")
+      .select("player_id, is_captain, is_vice_captain, is_bench, bench_order")
       .eq("fantasy_team_id", parent.fantasyTeamId)
       .eq("match_id", match.id),
     supabase
@@ -70,17 +69,29 @@ export default async function JornadaPage({
   const locked = isPredictionLocked(match.kickoffAt, matchRow?.locked_at ?? null);
 
   let lineup = thisWeekLineup ?? [];
-  // Nada guardado nesta jornada: parte do último onze, como no Fantasy a sério.
+  // Nada guardado nesta jornada: parte do último onze (e banco), como no Fantasy a sério.
   if (lineup.length === 0 && !locked) {
-    const { data: lastLineup } = await supabase
+    const { data: lastMatch } = await supabase
       .from("fantasy_lineups")
-      .select("player_id, is_captain, is_vice_captain, matches!inner(kickoff_at)")
+      .select("match_id, matches!inner(kickoff_at)")
       .eq("fantasy_team_id", parent.fantasyTeamId)
       .lt("matches.kickoff_at", match.kickoffAt)
       .order("kickoff_at", { referencedTable: "matches", ascending: false })
-      .limit(squadSize);
-    if (lastLineup && lastLineup.length > 0) lineup = lastLineup;
+      .limit(1)
+      .maybeSingle();
+    if (lastMatch) {
+      const { data: lastLineup } = await supabase
+        .from("fantasy_lineups")
+        .select("player_id, is_captain, is_vice_captain, is_bench, bench_order")
+        .eq("fantasy_team_id", parent.fantasyTeamId)
+        .eq("match_id", lastMatch.match_id);
+      if (lastLineup && lastLineup.length > 0) lineup = lastLineup;
+    }
   }
+  const starters = lineup.filter((l) => !l.is_bench);
+  const benchPlayers = lineup
+    .filter((l) => l.is_bench)
+    .sort((x, y) => (x.bench_order ?? 99) - (y.bench_order ?? 99));
 
   const initialGuess: InitialGuess | null = existing
     ? {
@@ -126,9 +137,10 @@ export default async function JornadaPage({
           locked={locked}
           format={team.format}
           initialFormation={parent.formation ?? defaultFormationFor(team.format)}
-          initialSelected={lineup.map((l) => l.player_id)}
-          initialCaptain={lineup.find((l) => l.is_captain)?.player_id ?? null}
-          initialViceCaptain={lineup.find((l) => l.is_vice_captain)?.player_id ?? null}
+          initialSelected={starters.map((l) => l.player_id)}
+          initialBench={benchPlayers.map((l) => l.player_id)}
+          initialCaptain={starters.find((l) => l.is_captain)?.player_id ?? null}
+          initialViceCaptain={starters.find((l) => l.is_vice_captain)?.player_id ?? null}
           initialGuess={initialGuess}
         />
       </main>

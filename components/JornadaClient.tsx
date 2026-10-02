@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Player } from "@/types/player";
 import { PitchBuilder } from "@/components/PitchBuilder";
 import { createBrowserSupabase } from "@/lib/supabase/client";
-import { FORMATIONS_BY_FORMAT, formationIdsFor, TeamFormat } from "@/config/formations";
+import { FORMATIONS_BY_FORMAT, FORMAT_BENCH_SIZE, formationIdsFor, TeamFormat } from "@/config/formations";
 
 export interface InitialGuess {
   goalsHome: string;
@@ -32,6 +32,7 @@ export function JornadaClient({
   format,
   initialFormation,
   initialSelected,
+  initialBench,
   initialCaptain,
   initialViceCaptain,
   initialGuess,
@@ -45,6 +46,7 @@ export function JornadaClient({
   format: TeamFormat;
   initialFormation: string;
   initialSelected: string[];
+  initialBench: string[];
   initialCaptain: string | null;
   initialViceCaptain: string | null;
   initialGuess: InitialGuess | null;
@@ -57,6 +59,10 @@ export function JornadaClient({
 
   const [assignments, setAssignments] = useState<(string | null)[]>(() =>
     Array.from({ length: totalRequired }, (_, i) => initialSelected[i] ?? null)
+  );
+  const benchSize = FORMAT_BENCH_SIZE[format];
+  const [bench, setBench] = useState<(string | null)[]>(() =>
+    Array.from({ length: benchSize }, (_, i) => initialBench[i] ?? null)
   );
   const [captain, setCaptain] = useState<string | null>(initialCaptain);
   const [viceCaptain, setViceCaptain] = useState<string | null>(initialViceCaptain);
@@ -71,6 +77,7 @@ export function JornadaClient({
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
   const selectedCount = assignments.filter((id) => id).length;
+  const benchCount = bench.filter((id) => id).length;
   const lineupDone = selectedCount === totalRequired && captain !== null && viceCaptain !== null;
   const outcome = deriveOutcome(goalsHome, goalsAway);
   const outcomeLabel =
@@ -108,6 +115,7 @@ export function JornadaClient({
     setMessage(null);
     const supabase = createBrowserSupabase();
     const playerIds = assignments.filter((id): id is string => !!id);
+    const benchIds = bench.filter((id): id is string => !!id);
 
     // 1. O onze (pontos pelo que os jogadores fazem)
     const { error: delErr } = await supabase
@@ -117,15 +125,26 @@ export function JornadaClient({
       .eq("match_id", matchId);
     if (delErr) return fail(delErr.message);
 
-    const { error: insErr } = await supabase.from("fantasy_lineups").insert(
-      playerIds.map((playerId) => ({
+    const { error: insErr } = await supabase.from("fantasy_lineups").insert([
+      ...playerIds.map((playerId) => ({
         fantasy_team_id: fantasyTeamId,
         match_id: matchId,
         player_id: playerId,
         is_captain: playerId === captain,
         is_vice_captain: playerId === viceCaptain,
-      }))
-    );
+        is_bench: false,
+        bench_order: null,
+      })),
+      ...benchIds.map((playerId, i) => ({
+        fantasy_team_id: fantasyTeamId,
+        match_id: matchId,
+        player_id: playerId,
+        is_captain: false,
+        is_vice_captain: false,
+        is_bench: true,
+        bench_order: i + 1,
+      })),
+    ]);
     if (insErr) return fail(insErr.message);
 
     const { error: teamErr } = await supabase.from("fantasy_teams").update({ formation }).eq("id", fantasyTeamId);
@@ -220,6 +239,7 @@ export function JornadaClient({
 
         <p className="mb-3 text-center text-sm font-semibold text-ink">
           {selectedCount} / {totalRequired} em campo
+          {benchSize > 0 && ` · banco ${benchCount}/${benchSize}`}
           {captain && " · Capitão ✓"}
           {viceCaptain && " · Vice ✓"}
         </p>
@@ -229,6 +249,11 @@ export function JornadaClient({
           roster={roster}
           assignments={assignments}
           onAssignmentsChange={handleAssignmentsChange}
+          bench={bench}
+          onBenchChange={(next) => {
+            setMessage(null);
+            setBench(next);
+          }}
           captain={captain}
           viceCaptain={viceCaptain}
           onPickCaptain={pickCaptain}

@@ -97,7 +97,7 @@ export default async function PontuacaoPage({ params }: { params: Promise<{ team
           </ul>
         )}
         <p className="-mt-4 mb-6 text-xs text-ink/50">
-          O capitão duplica os pontos que ganhar. Se não jogar, passa para o vice.
+          O capitão duplica os pontos que ganhar. Se não jogar, passa para o vice. O banco é opcional: se um dos teus titulares não jogar (0 minutos), entra o primeiro suplente teu que tenha jogado, por ordem.
         </p>
 
         <h2 className="mb-2 font-display text-base font-semibold text-ink">
