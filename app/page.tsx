@@ -25,6 +25,12 @@ export default async function HomePage() {
           quando for pedido.
         </div>
       )}
+      <div className="mb-5 flex justify-end">
+        <Link href="/login" className="rounded-xl border border-line bg-white px-4 py-2 text-xs font-semibold text-blue">
+          Já tenho conta · Entrar
+        </Link>
+      </div>
+
       {parent === "pending" && (
         <div className="mb-6 rounded-2xl border border-gold bg-gold/10 p-4 text-sm text-ink">
           ⏳ A tua conta está a aguardar aprovação do administrador da tua equipa.

@@ -1,11 +1,15 @@
 import { getTeamBySlug } from "@/lib/team";
 import { ClaimAdminForm } from "@/components/ClaimAdminForm";
+import { createServerSupabase } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function PendentePage({ params }: { params: Promise<{ teamSlug: string }> }) {
   const { teamSlug } = await params;
   const team = await getTeamBySlug(teamSlug);
+  const supabase = await createServerSupabase();
+  const { data: invitedSlug } = await supabase.rpc("my_invited_team_slug");
+  const isInvitedAdmin = invitedSlug === teamSlug;
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center px-5 pb-20 text-center">
@@ -19,7 +23,7 @@ export default async function PendentePage({ params }: { params: Promise<{ teamS
       <p className="mt-4 text-xs text-ink/50">
         Já falaste com o administrador da equipa? Se sim, é só questão de tempo.
       </p>
-      <ClaimAdminForm teamSlug={teamSlug} />
+      <ClaimAdminForm teamSlug={teamSlug} highlight={isInvitedAdmin} />
     </div>
   );
 }

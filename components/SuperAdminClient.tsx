@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createBrowserSupabase } from "@/lib/supabase/client";
+import { SITE_URL } from "@/lib/site";
 
 export interface TeamRow {
   teamId: string;
@@ -74,6 +75,28 @@ export function SuperAdminClient({ month, teams }: { month: string; teams: TeamR
                       </>
                     )}
                   </p>
+                )}
+                {row.adminInvite && !row.adminInvite.used && (
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent(
+                      [
+                        `Boas! A equipa ${row.clubName} ${row.teamName} foi aprovada no Family Fantasy Formação ⚽`,
+                        "",
+                        `1. Abre: ${SITE_URL}/${row.slug}`,
+                        `2. Cria conta com este email: ${row.adminInvite.email}`,
+                        "3. Cria a tua equipa",
+                        "4. No ecrã «a aguardar aprovação», escreve este código de administrador:",
+                        row.adminInvite.code,
+                        "",
+                        "Depois vais a Admin → Importar para colar o plantel e o calendário.",
+                      ].join("\n")
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1 inline-block text-xs font-semibold text-[#128C7E]"
+                  >
+                    📲 Enviar instruções ao responsável
+                  </a>
                 )}
               </div>
               <span className={`text-xs font-semibold ${row.status === "active" ? "text-blue" : "text-red"}`}>

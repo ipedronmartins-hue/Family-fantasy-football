@@ -16,12 +16,18 @@ export default async function JogosPage({ params }: { params: Promise<{ teamSlug
         <p className="text-sm text-white/70">{team.clubName} · {team.teamName} · {team.seasonLabel}</p>
         <h1 className="mt-1 font-display text-3xl font-semibold">Calendário</h1>
         <p className="mt-2 text-sm text-white/80">
-          {fixtures[0]?.competition} · {fixtures.length} jornadas
+          {fixtures.length > 0 ? `${fixtures[0].competition} · ${fixtures.length} jornadas` : "Ainda sem jogos"}
         </p>
       </header>
 
       <main className="flex-1 px-5 pt-6">
-        <JogosClient fixtures={fixtures} teamSlug={teamSlug} homeTeamName={homeTeamName} />
+        {fixtures.length === 0 ? (
+          <p className="rounded-2xl border border-line bg-white p-4 text-center text-sm text-ink/60">
+            O administrador ainda não publicou o calendário.
+          </p>
+        ) : (
+          <JogosClient fixtures={fixtures} teamSlug={teamSlug} homeTeamName={homeTeamName} />
+        )}
       </main>
     </div>
   );

@@ -5,6 +5,7 @@ import { getTeamBySlug } from "@/lib/team";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { formatMatchDate } from "@/lib/format";
 import { FixedCostButton } from "@/components/FixedCostButton";
+import { SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,25 @@ export default async function AdminPage({ params }: { params: Promise<{ teamSlug
     .eq("season_id", team.seasonId)
     .order("kickoff_at");
 
+  const [{ count: playerCount }, { count: parentCount }, { count: pendingCount }] = await Promise.all([
+    supabase.from("players").select("id", { count: "exact", head: true }).eq("season_id", team.seasonId),
+    supabase.from("parents").select("id", { count: "exact", head: true }).eq("season_id", team.seasonId),
+    supabase
+      .from("parents")
+      .select("id", { count: "exact", head: true })
+      .eq("season_id", team.seasonId)
+      .eq("status", "pending"),
+  ]);
+
+  const steps = [
+    { done: (playerCount ?? 0) > 0, label: "Preencher o plantel", href: `${base}/admin/importar` },
+    { done: (matches?.length ?? 0) > 0, label: "Publicar o calendário", href: `${base}/admin/importar` },
+    { done: (parentCount ?? 0) > 1, label: "Convidar os pais", href: null },
+  ];
+  const setupDone = steps.every((s) => s.done);
+  const inviteText = `Olá! Já está aberto o Family Fantasy Formação do ${homeTeamName} ⚽\n\nCria a tua conta aqui: ${SITE_URL}/${teamSlug}\n\nDepois de criares a tua equipa, eu aprovo o teu acesso.`;
+  const inviteHref = `https://wa.me/?text=${encodeURIComponent(inviteText)}`;
+
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col pb-20">
       <header className="bg-blue px-5 pb-6 pt-8 text-white">
@@ -36,11 +56,46 @@ export default async function AdminPage({ params }: { params: Promise<{ teamSlug
       </header>
 
       <main className="flex-1 px-5 pt-6">
+        {!setupDone && (
+          <div className="mb-4 rounded-2xl border border-gold bg-gold/10 p-4">
+            <p className="text-sm font-semibold text-ink">🚀 Para arrancar a equipa</p>
+            <ol className="mt-2 space-y-1.5">
+              {steps.map((s, i) => (
+                <li key={s.label} className="flex items-center gap-2 text-sm">
+                  <span
+                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
+                      s.done ? "bg-blue text-white" : "bg-white text-ink/60"
+                    }`}
+                  >
+                    {s.done ? "✓" : i + 1}
+                  </span>
+                  {s.href && !s.done ? (
+                    <Link href={s.href} className="font-semibold text-blue underline">
+                      {s.label}
+                    </Link>
+                  ) : (
+                    <span className={s.done ? "text-ink/50 line-through" : "text-ink"}>{s.label}</span>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+
+        <a
+          href={inviteHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mb-4 block rounded-2xl bg-[#25D366] p-4 text-center text-sm font-semibold text-white"
+        >
+          💬 Convidar pais por WhatsApp
+        </a>
+
         <Link
           href={`${base}/admin/pais`}
           className="mb-4 block rounded-2xl border border-blue bg-blue/5 p-4 text-center text-sm font-semibold text-blue"
         >
-          👨‍👩‍👧 Pais — aprovar e gerir acessos →
+          👨‍👩‍👧 Pais — aprovar e gerir acessos{(pendingCount ?? 0) > 0 ? ` · ${pendingCount} por aprovar` : ""} →
         </Link>
 
         <Link

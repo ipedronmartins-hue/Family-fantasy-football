@@ -44,7 +44,7 @@ export async function getFixtures(seasonId: string): Promise<Match[]> {
   return (data as MatchRow[]).map(mapRow);
 }
 
-export async function getNextFixture(seasonId: string, referenceDate: Date = new Date()): Promise<Match> {
+export async function getNextFixture(seasonId: string, referenceDate: Date = new Date()): Promise<Match | undefined> {
   // A match already underway takes priority over "next scheduled", even
   // though its kickoff time is technically in the past by now.
   const { data: liveMatch } = await supabase

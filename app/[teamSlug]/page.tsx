@@ -7,6 +7,8 @@ import { supabase } from "@/lib/supabaseClient";
 import { MatchCard } from "@/components/MatchCard";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { MotmVote } from "@/components/MotmVote";
+import { FORMAT_SQUAD_SIZE } from "@/config/formations";
+import { createServerSupabase } from "@/lib/supabase/server";
 import { isVotingClosed } from "@/lib/deadline";
 
 export const dynamic = "force-dynamic";
@@ -53,7 +55,24 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
       : parent === "suspended"
       ? `${base}/suspenso`
       : `${base}/jornada`;
-  const ctaLabel = hasTeam ? "Fazer a minha jornada" : "Montar a minha equipa";
+  const ctaLabel = hasTeam
+    ? "Fazer a minha jornada"
+    : parent === "pending"
+    ? "A aguardar aprovação do administrador"
+    : parent === "suspended"
+    ? "Acesso suspenso"
+    : "Montar a minha equipa";
+
+  let pendingParents = 0;
+  if (hasTeam && parent.isAdmin) {
+    const sb = await createServerSupabase();
+    const { count } = await sb
+      .from("parents")
+      .select("id", { count: "exact", head: true })
+      .eq("season_id", team.seasonId)
+      .eq("status", "pending");
+    pendingParents = count ?? 0;
+  }
 
   const monthStart = new Date();
   monthStart.setDate(1);
@@ -134,19 +153,40 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
         </h1>
         <p className="mt-3 text-sm text-white/80">
           Bem-vindo ao Family Fantasy Formação — a competição dos pais do {team.clubName} {team.teamName}.
-          Escolhe os teus 11, o teu capitão, e tenta antecipar o que vai acontecer dentro das
+          Escolhe os teus {FORMAT_SQUAD_SIZE[team.format]}, o teu capitão, e tenta antecipar o que vai acontecer dentro das
           quatro linhas em cada jornada.
         </p>
       </header>
 
       <main className="flex-1 px-5 pt-6">
-        <div className="mb-4">
-          <p className="mb-2 text-xs font-semibold text-ink/60">
-            PRÓXIMO JOGO ·{" "}
-            {nextMatch.competition === "Amigável" ? "AMIGÁVEL" : nextMatch.code.replace("J", "JORNADA ")}
-          </p>
-          <MatchCard match={nextMatch} teamSlug={teamSlug} homeTeamName={`${team.clubName} ${team.teamName}`} />
-        </div>
+        {pendingParents > 0 && (
+          <Link
+            href={`${base}/admin/pais`}
+            className="mb-4 block rounded-2xl border border-gold bg-gold/10 p-4 text-center text-sm font-semibold text-ink"
+          >
+            👨‍👩‍👧 {pendingParents} {pendingParents === 1 ? "pai à espera" : "pais à espera"} de aprovação →
+          </Link>
+        )}
+
+        {nextMatch ? (
+          <div className="mb-4">
+            <p className="mb-2 text-xs font-semibold text-ink/60">
+              PRÓXIMO JOGO ·{" "}
+              {nextMatch.competition === "Amigável" ? "AMIGÁVEL" : nextMatch.code.replace("J", "JORNADA ")}
+            </p>
+            <MatchCard match={nextMatch} teamSlug={teamSlug} homeTeamName={`${team.clubName} ${team.teamName}`} />
+          </div>
+        ) : (
+          <div className="mb-4 rounded-2xl border border-line bg-white p-4 text-center">
+            <p className="text-sm font-semibold text-ink">📅 O calendário ainda não foi publicado</p>
+            <p className="mt-1 text-xs text-ink/50">Assim que o administrador o publicar, aparece aqui o próximo jogo.</p>
+            {hasTeam && parent.isAdmin && (
+              <Link href={`${base}/admin/importar`} className="mt-3 block text-xs font-semibold text-blue">
+                Importar calendário →
+              </Link>
+            )}
+          </div>
+        )}
 
         <Link
           href={ctaHref}

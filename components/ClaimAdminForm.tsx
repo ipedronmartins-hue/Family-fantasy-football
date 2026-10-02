@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserSupabase } from "@/lib/supabase/client";
 
-export function ClaimAdminForm({ teamSlug }: { teamSlug: string }) {
+export function ClaimAdminForm({ teamSlug, highlight = false }: { teamSlug: string; highlight?: boolean }) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(highlight);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -34,7 +34,12 @@ export function ClaimAdminForm({ teamSlug }: { teamSlug: string }) {
   }
 
   return (
-    <div className="mt-8 w-full rounded-2xl border border-line bg-white p-4 text-left">
+    <div className={`mt-8 w-full rounded-2xl border p-4 text-left ${highlight ? "border-gold bg-gold/10" : "border-line bg-white"}`}>
+      {highlight && (
+        <p className="mb-3 text-sm font-semibold text-ink">
+          👋 És o responsável desta equipa? Escreve o código de 6 caracteres que o Ivo te enviou.
+        </p>
+      )}
       <label className="mb-1.5 block text-xs font-semibold text-ink/70">Código de administrador</label>
       <input
         value={code}

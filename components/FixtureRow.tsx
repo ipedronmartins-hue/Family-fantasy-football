@@ -50,7 +50,7 @@ export function FixtureRow({
           isLive ? "bg-red text-white" : "bg-blue/10 text-blue"
         }`}
       >
-        {isLive ? "Ao vivo" : played ? "Ver jogo" : "Prever"}
+        {isLive ? "Ao vivo" : played ? "Ver jogo" : "Fazer jornada"}
       </Link>
     </div>
   );

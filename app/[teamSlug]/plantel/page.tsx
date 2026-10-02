@@ -32,6 +32,11 @@ export default async function PlantelPage({ params }: { params: Promise<{ teamSl
       </header>
 
       <main className="flex-1 px-5 pt-6">
+        {roster.length === 0 && (
+          <p className="rounded-2xl border border-line bg-white p-4 text-center text-sm text-ink/60">
+            O administrador ainda não preencheu o plantel.
+          </p>
+        )}
         {sections.map(({ group, players }) => (
           <SquadSection key={group} group={group} players={players} />
         ))}

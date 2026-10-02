@@ -59,7 +59,7 @@ export function OnboardingForm({
       return;
     }
 
-    router.push(`/${teamSlug}`);
+    router.push(`/${teamSlug}/pendente`);
     router.refresh();
   }
 

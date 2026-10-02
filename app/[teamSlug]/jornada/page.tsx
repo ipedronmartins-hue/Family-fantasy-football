@@ -33,6 +33,24 @@ export default async function JornadaPage({
     getRoster(team.seasonId),
   ]);
 
+  if (!match || roster.length === 0) {
+    return (
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center px-5 pb-20 text-center">
+        <span className="text-4xl">🗓️</span>
+        <h1 className="mt-4 font-display text-2xl font-semibold text-ink">Ainda não há jornada</h1>
+        <p className="mt-2 text-sm text-ink/60">
+          {!match
+            ? "O calendário ainda não foi publicado."
+            : "O plantel ainda não foi preenchido."}{" "}
+          Assim que o administrador o fizer, podes montar o teu onze aqui.
+        </p>
+        <Link href={base} className="mt-6 text-sm font-semibold text-blue">
+          ← Voltar ao início
+        </Link>
+      </div>
+    );
+  }
+
   const supabase = await createServerSupabase();
   const [{ data: matchRow }, { data: thisWeekLineup }, { data: existing }] = await Promise.all([
     supabase.from("matches").select("locked_at").eq("id", match.id).maybeSingle(),
