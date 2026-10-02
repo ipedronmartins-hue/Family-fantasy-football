@@ -10,7 +10,6 @@ export interface FundEntryRow {
   amount: number;
   description: string | null;
   category: string;
-  linked: boolean;
 }
 
 const CATEGORY_OPTIONS = [
@@ -77,9 +76,9 @@ export function FundEntryForm({ seasonId, entries }: { seasonId: string; entries
     <div className="rounded-2xl border border-line bg-white p-4">
       <h2 className="mb-1 font-display text-base font-semibold text-ink">Registar movimento</h2>
       <p className="mb-3 text-xs text-ink/50">
-        Os contributos das famílias entram sozinhos no fundo quando os registas acima — usa
-        «Receita» só para outras entradas (donativos, patrocínio). Só o valor e o tipo são
-        obrigatórios.
+        O dinheiro entra no fundo à mão: lança aqui cada receita (contributos, donativos) e
+        cada despesa. Registar quem pagou, em cima, não mexe no fundo. Só o valor e o tipo
+        são obrigatórios.
       </p>
 
       <div className="mb-3 flex gap-2">
@@ -148,13 +147,9 @@ export function FundEntryForm({ seasonId, entries }: { seasonId: string; entries
                 {r.entryType === "receita" ? "+" : "-"}
                 {r.amount.toFixed(2)} € {r.description ? `— ${r.description}` : ""}
               </span>
-              {r.linked ? (
-                <span className="text-[11px] text-ink/40">contributo</span>
-              ) : (
-                <button onClick={() => removeEntry(r)} className="text-xs font-semibold text-red">
-                  remover
-                </button>
-              )}
+              <button onClick={() => removeEntry(r)} className="text-xs font-semibold text-red">
+                remover
+              </button>
             </li>
           ))}
         </ul>

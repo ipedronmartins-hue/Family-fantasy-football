@@ -38,7 +38,7 @@ export function PaymentsClient({
     }
     const row = rows.find((r) => r.fantasyTeamId === fantasyTeamId);
     const ok = window.confirm(
-      `Registar ${amount} € de «${row?.teamName}» (${METHOD_LABELS[method]})?\n\nO valor entra sozinho no fundo da equipa.`
+      `Registar ${amount} € de «${row?.teamName}» (${METHOD_LABELS[method]})?\n\nIsto só regista quem pagou — não mexe no fundo. Lança a receita à parte, em «Registar movimento».`
     );
     if (!ok) return;
     setBusyId(fantasyTeamId);
@@ -61,7 +61,7 @@ export function PaymentsClient({
   async function revoke(row: FamilyRow) {
     if (!row.paymentId) return;
     const ok = window.confirm(
-      `Anular o contributo de «${row.teamName}» (${row.amount} €)?\n\nO valor também sai do fundo da equipa. Fica registado no histórico.`
+      `Anular o contributo de «${row.teamName}» (${row.amount} €)?\n\nIsto não mexe no fundo: se já lançaste a receita, remove-a à parte. Fica registado no histórico.`
     );
     if (!ok) return;
     setBusyId(row.fantasyTeamId);

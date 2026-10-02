@@ -25,7 +25,7 @@ export default async function AdminPaymentsPage({ params }: { params: Promise<{ 
   const monthLabel = monthStart.toLocaleDateString("pt-PT", { month: "long", year: "numeric" });
 
   const supabase = await createServerSupabase();
-  const [{ data: teams }, { data: payments }, { data: fundEntries }, { data: linkedRows }, { data: logRows }] = await Promise.all([
+  const [{ data: teams }, { data: payments }, { data: fundEntries }, { data: allPayments }, { data: allEntries }, { data: logRows }] = await Promise.all([
     supabase.from("fantasy_teams").select("id, name").eq("season_id", team.seasonId).order("name"),
     supabase.from("family_payments").select("id, fantasy_team_id, amount, method").eq("season_id", team.seasonId).eq("month", monthKey),
     supabase
@@ -34,11 +34,8 @@ export default async function AdminPaymentsPage({ params }: { params: Promise<{ 
       .eq("season_id", team.seasonId)
       .order("created_at", { ascending: false })
       .limit(10),
-    supabase
-      .from("family_payments")
-      .select("fund_entry_id")
-      .eq("season_id", team.seasonId)
-      .not("fund_entry_id", "is", null),
+    supabase.from("family_payments").select("amount").eq("season_id", team.seasonId),
+    supabase.from("team_fund_entries").select("entry_type, amount").eq("season_id", team.seasonId),
     supabase
       .from("financial_audit_log")
       .select("action, details, reason, done_at")
@@ -46,7 +43,11 @@ export default async function AdminPaymentsPage({ params }: { params: Promise<{ 
       .order("done_at", { ascending: false })
       .limit(8),
   ]);
-  const linkedIds = new Set((linkedRows ?? []).map((r) => r.fund_entry_id));
+  const paymentsTotal = (allPayments ?? []).reduce((s, p) => s + Number(p.amount), 0);
+  const receitasTotal = (allEntries ?? [])
+    .filter((e) => e.entry_type === "receita")
+    .reduce((s, e) => s + Number(e.amount), 0);
+  const missing = paymentsTotal - receitasTotal;
 
   const paidMap = new Map((payments ?? []).map((p) => [p.fantasy_team_id, p]));
   const families: FamilyRow[] = (teams ?? []).map((t) => ({
@@ -64,7 +65,6 @@ export default async function AdminPaymentsPage({ params }: { params: Promise<{ 
     amount: e.amount,
     description: e.description,
     category: e.category,
-    linked: linkedIds.has(e.id),
   }));
 
   return (
@@ -85,6 +85,14 @@ export default async function AdminPaymentsPage({ params }: { params: Promise<{ 
             month={monthKey}
             families={families}
           />
+        )}
+
+        {missing > 0.005 && (
+          <div className="rounded-2xl border border-gold bg-gold/10 p-4 text-sm text-ink">
+            ⚠️ Registaste <strong>{paymentsTotal.toFixed(2)} €</strong> em contributos, mas só lançaste{" "}
+            <strong>{receitasTotal.toFixed(2)} €</strong> de receitas no fundo. Falta lançar{" "}
+            <strong>{missing.toFixed(2)} €</strong>?
+          </div>
         )}
 
         <FundEntryForm key={entries.map((e) => e.id).join("|")} seasonId={team.seasonId} entries={entries} />
