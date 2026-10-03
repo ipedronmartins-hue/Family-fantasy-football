@@ -40,18 +40,15 @@ export function MatchCard({
           {formatMatchDate(match.date)} · {match.home ? "Casa" : "Fora"}
         </p>
       )}
-      {showPredictLink && (
+      {/* Jogos por jogar: o botão "Fazer a minha jornada" do Início já leva ao mesmo sítio. */}
+      {showPredictLink && match.status !== "scheduled" && (
         <Link
-          href={
-            match.status === "scheduled"
-              ? `/${teamSlug}/jornada?jornada=${match.code}`
-              : `/${teamSlug}/jogos/${match.code}`
-          }
+          href={`/${teamSlug}/jogos/${match.code}`}
           className={`mt-3 block rounded-xl py-2.5 text-center text-sm font-semibold ${
             match.status === "live" ? "bg-red text-white" : "bg-blue text-white"
           }`}
         >
-          {match.status === "scheduled" ? "Fazer previsão" : match.status === "live" ? "Ver ao vivo" : "Ver jogo"}
+          {match.status === "live" ? "Ver ao vivo" : "Ver jogo"}
         </Link>
       )}
     </div>
