@@ -110,7 +110,8 @@ export default async function MatchSummaryPage({
   const homeTeamName = `${team.clubName} ${team.teamName}`;
   const homeLabel = match.home ? homeTeamName : match.opponent;
   const awayLabel = match.home ? match.opponent : homeTeamName;
-  const topTeam = matchdayTop?.[0];
+  // Só há "Mister da Bancada" se alguém tiver pontos: com tudo a zeros (pontos por calcular) seria uma equipa escolhida ao acaso.
+  const topTeam = matchdayTop?.[0] && matchdayTop[0].points > 0 ? matchdayTop[0] : undefined;
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col pb-20">
@@ -168,7 +169,9 @@ export default async function MatchSummaryPage({
               <div className="rounded-2xl border border-line bg-white p-4">
                 <h2 className="mb-2 font-display text-sm font-semibold text-ink">A tua previsão</h2>
                 <p className="text-sm text-ink/70">
-                  Previste {myPrediction.predicted_home_goals} - {myPrediction.predicted_away_goals}
+                  {myPrediction.predicted_home_goals == null && myPrediction.predicted_away_goals == null
+                    ? "Não indicaste o resultado."
+                    : `Previste ${myPrediction.predicted_home_goals ?? "?"} - ${myPrediction.predicted_away_goals ?? "?"}`}
                 </p>
                 {myPoints ? (
                   <p className="mt-2 font-display text-2xl font-bold text-gold">
