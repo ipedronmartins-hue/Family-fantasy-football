@@ -197,7 +197,7 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
 
         {hasTeam && (
           <p className="mb-4 mt-2 text-center text-xs text-ink/60">
-            Contributo deste mês: {quotaPaid ? "regularizado ✅" : "por regularizar ⏳"}
+            Contributo deste mês: {quotaPaid ? "registado ✅" : "ainda não registado"}
           </p>
         )}
         {!hasTeam && <div className="mb-4" />}
