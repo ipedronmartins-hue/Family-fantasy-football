@@ -46,7 +46,7 @@ export default async function AdminParentsPage({ params }: { params: Promise<{ t
       </header>
 
       <main className="flex-1 px-5 pt-6">
-        <ParentsAdminClient parents={rows} />
+        <ParentsAdminClient parents={rows} currentUserId={parent.userId} />
       </main>
     </div>
   );

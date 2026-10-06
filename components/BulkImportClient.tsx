@@ -79,11 +79,13 @@ export function BulkImportClient({
   seasonId,
   existingNumbers,
   nextMatchday,
+  existingMatches,
 }: {
   teamSlug: string;
   seasonId: string;
   existingNumbers: number[];
   nextMatchday: number;
+  existingMatches: { date: string; opponent: string }[];
 }) {
   const router = useRouter();
   const [playersText, setPlayersText] = useState("");
@@ -95,6 +97,16 @@ export function BulkImportClient({
   const players = useMemo(() => parsePlayers(playersText), [playersText]);
   const matches = useMemo(() => parseMatches(matchesText), [matchesText]);
   const repeatedNumbers = players.ok.filter((p) => existingNumbers.includes(p.number)).map((p) => p.number);
+
+  const norm = (s: string) =>
+    s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+  const seenMatches = new Set(existingMatches.map((m) => `${m.date}|${norm(m.opponent)}`));
+  const duplicateMatches: string[] = [];
+  for (const m of matches.ok) {
+    const key = `${m.kickoff.toLocaleDateString("en-GB")}|${norm(m.opponent)}`;
+    if (seenMatches.has(key)) duplicateMatches.push(`${m.kickoff.toLocaleDateString("en-GB")} ${m.opponent}`);
+    seenMatches.add(key);
+  }
 
   async function importPlayers() {
     setBusy(true);
@@ -141,7 +153,13 @@ export function BulkImportClient({
       setMessage(`Erro: ${error.message}`);
       return;
     }
-    setMessage(`${sorted.length} jogos importados.`);
+    // Numera todas as jornadas pela ordem das datas (várias importações baralhavam a ordem).
+    const { error: renumberError } = await supabase.rpc("renumber_matchdays");
+    setMessage(
+      renumberError
+        ? `${sorted.length} jogos importados.`
+        : `${sorted.length} jogos importados, com as jornadas numeradas pela ordem das datas.`
+    );
     setMatchesText("");
     router.refresh();
   }
@@ -191,6 +209,10 @@ export function BulkImportClient({
           na {nextMatchday}.
         </p>
         <label className="mb-1 block text-xs font-semibold text-ink/70">Competição</label>
+        <p className="mb-1 text-[11px] text-ink/50">
+          O nome do campeonato ou taça (ex.: Campeonato, Taça) — não o nome da equipa. Podes importar
+          tudo de uma vez ou por partes.
+        </p>
         <input
           value={competition}
           onChange={(e) => setCompetition(e.target.value)}
@@ -209,9 +231,14 @@ export function BulkImportClient({
         {matches.bad.length > 0 && (
           <p className="mt-1 text-xs text-red">Não percebi: {matches.bad.join(" · ")}</p>
         )}
+        {duplicateMatches.length > 0 && (
+          <p className="mt-1 text-xs text-red">
+            Já existe (ou está repetido): {duplicateMatches.join(" · ")}
+          </p>
+        )}
         <button
           onClick={importMatches}
-          disabled={busy || matches.ok.length === 0 || matches.bad.length > 0}
+          disabled={busy || matches.ok.length === 0 || matches.bad.length > 0 || duplicateMatches.length > 0}
           className="mt-3 w-full rounded-xl bg-blue py-2.5 text-sm font-semibold text-white disabled:opacity-40"
         >
           Importar {matches.ok.length || ""} jogos

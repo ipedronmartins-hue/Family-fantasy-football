@@ -18,7 +18,7 @@ export default async function ImportarPage({ params }: { params: Promise<{ teamS
 
   const team = await getTeamBySlug(teamSlug);
   const supabase = await createServerSupabase();
-  const [{ data: players }, { data: lastMatch }] = await Promise.all([
+  const [{ data: players }, { data: lastMatch }, { data: allMatches }] = await Promise.all([
     supabase.from("players").select("shirt_number").eq("season_id", team.seasonId),
     supabase
       .from("matches")
@@ -27,6 +27,7 @@ export default async function ImportarPage({ params }: { params: Promise<{ teamS
       .order("matchday", { ascending: false })
       .limit(1)
       .maybeSingle(),
+    supabase.from("matches").select("kickoff_at, opponent").eq("season_id", team.seasonId),
   ]);
 
   return (
@@ -44,6 +45,10 @@ export default async function ImportarPage({ params }: { params: Promise<{ teamS
           seasonId={team.seasonId}
           existingNumbers={(players ?? []).map((p) => p.shirt_number)}
           nextMatchday={(lastMatch?.matchday ?? 0) + 1}
+          existingMatches={(allMatches ?? []).map((m) => ({
+            date: new Date(m.kickoff_at).toLocaleDateString("en-GB", { timeZone: "Europe/Lisbon" }),
+            opponent: m.opponent,
+          }))}
         />
       </main>
     </div>

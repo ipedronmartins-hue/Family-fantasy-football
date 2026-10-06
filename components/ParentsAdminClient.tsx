@@ -11,7 +11,7 @@ export interface ParentRow {
   teamName: string | null;
 }
 
-export function ParentsAdminClient({ parents }: { parents: ParentRow[] }) {
+export function ParentsAdminClient({ parents, currentUserId }: { parents: ParentRow[]; currentUserId: string }) {
   const [rows, setRows] = useState(parents);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -50,7 +50,11 @@ export function ParentsAdminClient({ parents }: { parents: ParentRow[] }) {
     });
     setBusyId(null);
     if (error) {
-      setMessage(error.message);
+      setMessage(
+        error.message.includes("own status")
+          ? "Não podes suspender a tua própria conta."
+          : "Não foi possível alterar. Tenta outra vez."
+      );
       return;
     }
     setRows((prev) => prev.map((r) => (r.id === parentId ? { ...r, status } : r)));
@@ -70,19 +74,23 @@ export function ParentsAdminClient({ parents }: { parents: ParentRow[] }) {
               {row.teamName ?? "sem equipa"} {row.email ? `· ${row.email}` : ""}
             </p>
           </div>
-          <div className="flex shrink-0 gap-1.5">
-            {actions}
-            <button
-              onClick={() => {
-                setResetFor(resetFor === row.id ? null : row.id);
-                setNewPassword("");
-              }}
-              title="Repor palavra-passe"
-              className="rounded-lg border border-line px-2 py-1.5 text-xs"
-            >
-              🔑
-            </button>
-          </div>
+          {row.id === currentUserId ? (
+            <span className="shrink-0 rounded-lg bg-blue/10 px-2 py-1 text-[11px] font-semibold text-blue">és tu</span>
+          ) : (
+            <div className="flex shrink-0 gap-1.5">
+              {actions}
+              <button
+                onClick={() => {
+                  setResetFor(resetFor === row.id ? null : row.id);
+                  setNewPassword("");
+                }}
+                title="Repor palavra-passe"
+                className="rounded-lg border border-line px-2 py-1.5 text-xs"
+              >
+                🔑
+              </button>
+            </div>
+          )}
         </div>
         {resetFor === row.id && (
           <div className="mt-2 flex gap-2">
