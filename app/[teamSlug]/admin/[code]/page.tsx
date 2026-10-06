@@ -7,6 +7,7 @@ import { isPredictionLocked } from "@/lib/deadline";
 import { FORMAT_SQUAD_SIZE } from "@/config/formations";
 import { AdminMatchForm } from "@/components/AdminMatchForm";
 import { PlayerPerformanceForm } from "@/components/PlayerPerformanceForm";
+import { MatchSettingsForm } from "@/components/MatchSettingsForm";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,7 @@ export default async function AdminMatchPage({
   const [{ data: match }, roster] = await Promise.all([
     supabase
       .from("matches")
-      .select("id, matchday, opponent, home, kickoff_at, home_goals, away_goals, man_of_the_match_id, locked_at, status")
+      .select("id, matchday, opponent, competition, home, kickoff_at, home_goals, away_goals, man_of_the_match_id, locked_at, status")
       .eq("season_id", team.seasonId)
       .eq("matchday", matchday)
       .maybeSingle(),
@@ -67,6 +68,11 @@ export default async function AdminMatchPage({
 
   const locked = isPredictionLocked(match.kickoff_at, match.locked_at);
   const homeTeamName = `${team.clubName} ${team.teamName}`;
+
+  const kickoffLisbon = (opts: Intl.DateTimeFormatOptions) =>
+    new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Lisbon", hourCycle: "h23", ...opts }).format(new Date(match.kickoff_at));
+  const kickoffDate = kickoffLisbon({ year: "numeric", month: "2-digit", day: "2-digit" }); // YYYY-MM-DD
+  const kickoffTime = kickoffLisbon({ hour: "2-digit", minute: "2-digit" }); // HH:MM
 
   const initialMinutes: Record<string, number> = {};
   for (const row of minutesRows ?? []) initialMinutes[row.player_id] = row.minutes_played;
@@ -115,6 +121,18 @@ export default async function AdminMatchPage({
             initialBonus={(bonusRows ?? []).map((b) => ({ playerId: b.player_id, points: b.points }))}
           />
         </div>
+
+        <MatchSettingsForm
+          teamSlug={teamSlug}
+          matchId={match.id}
+          initial={{
+            opponent: match.opponent,
+            competition: match.competition,
+            date: kickoffDate,
+            time: kickoffTime,
+            home: match.home,
+          }}
+        />
       </main>
     </div>
   );
