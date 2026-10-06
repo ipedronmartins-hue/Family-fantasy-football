@@ -74,7 +74,7 @@ export default function RegistarEquipaPage() {
         A tua equipa pode ter a sua própria versão do Family Fantasy Formação, com o vosso
         plantel e calendário. Custo fixo de 20 €/mês, pago pelo fundo da equipa.
       </p>
-      <a href="/" className="mt-2 inline-block text-xs font-semibold text-blue">
+      <a href="/fantasy" className="mt-2 inline-block text-xs font-semibold text-blue">
         Porque criámos isto →
       </a>
 

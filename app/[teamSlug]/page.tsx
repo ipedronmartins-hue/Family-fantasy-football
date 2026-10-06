@@ -368,7 +368,7 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
           </Link>
         )}
 
-        <Link href="/" className="block pb-2 text-center text-xs text-ink/40">
+        <Link href="/fantasy" className="block pb-2 text-center text-xs text-ink/40">
           Sobre a plataforma
         </Link>
       </main>
