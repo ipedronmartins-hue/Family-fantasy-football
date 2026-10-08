@@ -1,12 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentParent } from "@/lib/auth";
+import ClubPicker from "@/components/ClubPicker";
 
 export const dynamic = "force-dynamic";
-
-const WHATSAPP_SENIORES = `https://wa.me/351913695846?text=${encodeURIComponent(
-  "Olá! Tenho interesse na área para equipas de seniores do Family Fantasy."
-)}`;
 
 export default async function HubPage() {
   // Quem já tem conta vai direto para a equipa. É isto que faz a app instalada
@@ -46,37 +43,7 @@ export default async function HubPage() {
         </Link>
       </div>
 
-      <h1 className="font-display text-3xl font-semibold text-ink">Jogos para a bancada da tua equipa</h1>
-      <p className="mt-3 text-sm text-ink/70">Escolhe a tua área.</p>
-
-      <Link href="/fantasy" className="mt-6 block rounded-2xl border border-line bg-white p-5">
-        <p className="text-xs font-semibold text-blue">⚽ FORMAÇÃO</p>
-        <p className="mt-1 font-display text-xl font-semibold text-ink">Family Fantasy Formação</p>
-        <p className="mt-2 text-sm text-ink/70">
-          O Fantasy Football privado dos pais de uma equipa de formação. Escolhe o teu onze, prevê
-          o jogo e ajuda a equipa do teu filho.
-        </p>
-        <span className="mt-3 block text-sm font-semibold text-blue">Saber mais →</span>
-      </Link>
-
-      <div className="mt-4 rounded-2xl border border-dashed border-line bg-white/60 p-5">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold text-ink/50">🏟️ SENIORES</p>
-          <span className="rounded-full bg-gold/20 px-2 py-0.5 text-[10px] font-semibold text-ink">Em breve</span>
-        </div>
-        <p className="mt-1 font-display text-xl font-semibold text-ink">Palpites 1X2 para equipas de seniores</p>
-        <p className="mt-2 text-sm text-ink/70">
-          Os palpites da jornada e o ranking da época, só entre os jogadores da equipa.
-        </p>
-        <a
-          href={WHATSAPP_SENIORES}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 block text-sm font-semibold text-[#128C7E]"
-        >
-          💬 Quero ser avisado →
-        </a>
-      </div>
+      <ClubPicker />
 
       <p className="mt-8 text-center text-xs text-ink/40">
         És pai ou mãe de uma equipa? Toca em «Entrar» no topo.
