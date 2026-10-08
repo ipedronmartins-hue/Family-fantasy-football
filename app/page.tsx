@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentParent } from "@/lib/auth";
 import ClubPicker from "@/components/ClubPicker";
+import { createServerSupabase } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,22 @@ export default async function HubPage() {
   const parent = await getCurrentParent();
   if (parent && typeof parent === "object") {
     redirect(`/${parent.teamSlug}`);
+  }
+
+  // Quem só faz parte dos Palpites dos Leões vai direto para lá.
+  if (parent === "onboarding") {
+    const supabase = await createServerSupabase();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: pal } = await supabase
+        .from("pal_members")
+        .select("group_id")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .limit(1)
+        .maybeSingle();
+      if (pal) redirect("/leoes");
+    }
   }
 
   return (

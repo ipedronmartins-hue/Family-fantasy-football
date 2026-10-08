@@ -18,6 +18,9 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const team = searchParams.get("team");
+  // Só aceitamos o destino da área dos Leões (evita redirecionamentos abertos).
+  const nextParam = searchParams.get("next");
+  const next = nextParam === "/leoes" ? nextParam : null;
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [step, setStep] = useState<"credentials" | "team">("credentials");
   const [email, setEmail] = useState("");
@@ -36,6 +39,8 @@ function LoginForm() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+
+    if (next) return goTo(next);
 
     if (user) {
       const { data: parent } = await supabase

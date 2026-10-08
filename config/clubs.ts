@@ -13,8 +13,7 @@ export const FORMACAO_CLUBS: ClubEntry[] = [
   { club: "FC Infesta", team: "Sub-13", slug: "fc-infesta-sub-13" },
 ];
 
-// Conceito diferente: palpites 1X2 para uma equipa de seniores. Ainda não tem
-// área própria na app, por isso o cartão pede para ser avisado.
+// Conceito diferente: palpites 1X2 para uma equipa de seniores (área /leoes).
 export const LEOES = {
   club: "Leões Valboenses",
   label: "Seniores",
