@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { PAL_SLUG, type PalFixture, type PalGroup, type PalRound } from "@/lib/palpites";
+import { PAL_SLUG, type PalFixture, type PalGroup } from "@/lib/palpites";
 import LeoesAdmin, { type AdminMember } from "@/components/leoes/LeoesAdmin";
+import type { AdminRound } from "@/components/leoes/RoundsAdmin";
 
 export const dynamic = "force-dynamic";
 
@@ -25,21 +26,29 @@ export default async function LeoesAdminPage() {
     .maybeSingle();
   if (!me || me.status !== "active" || !(me.is_admin || me.is_treasurer)) redirect("/leoes");
 
-  const [{ data: members }, { data: openRound }] = await Promise.all([
+  const [{ data: members }, { data: roundRows }] = await Promise.all([
     supabase.rpc("pal_members_admin", { p_group: group.id }),
-    supabase.from("pal_rounds").select("id, number, status, carry_in").eq("group_id", group.id).eq("status", "open").maybeSingle(),
+    supabase
+      .from("pal_rounds")
+      .select("id, number, status, carry_in")
+      .eq("group_id", group.id)
+      .in("status", ["open", "scheduled"])
+      .order("number"),
   ]);
 
-  let fixtures: PalFixture[] = [];
-  let ticketCount = 0;
-  if (openRound) {
-    const [{ data: fx }, { count }] = await Promise.all([
-      supabase.from("pal_fixtures").select("id, position, home, away, kickoff, result").eq("round_id", openRound.id).order("position"),
-      supabase.from("pal_tickets").select("id", { count: "exact", head: true }).eq("round_id", openRound.id),
-    ]);
-    fixtures = (fx ?? []) as PalFixture[];
-    ticketCount = count ?? 0;
-  }
+  const rounds: AdminRound[] = await Promise.all(
+    (roundRows ?? []).map(async (r) => {
+      const [{ data: fx }, { count }] = await Promise.all([
+        supabase.from("pal_fixtures").select("id, position, home, away, kickoff, result").eq("round_id", r.id).order("position"),
+        supabase.from("pal_tickets").select("id", { count: "exact", head: true }).eq("round_id", r.id),
+      ]);
+      return {
+        round: r as AdminRound["round"],
+        fixtures: (fx ?? []) as PalFixture[],
+        ticketCount: count ?? 0,
+      };
+    })
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pb-12 pt-6">
@@ -55,9 +64,7 @@ export default async function LeoesAdminPage() {
         }}
         isAdmin={me.is_admin}
         members={((members ?? []) as AdminMember[]).map((m) => ({ ...m, balance: Number(m.balance) }))}
-        round={(openRound ?? null) as PalRound | null}
-        fixtures={fixtures}
-        ticketCount={ticketCount}
+        rounds={rounds}
         selfId={user.id}
       />
     </div>
