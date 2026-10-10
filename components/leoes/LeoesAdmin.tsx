@@ -59,7 +59,7 @@ export default function LeoesAdmin({ group, isAdmin, members, rounds, selfId }: 
   const sb = () => createBrowserSupabase();
 
   const grant = (m: AdminMember, amount: number) =>
-    run(() => sb().rpc("pal_grant_finos", { p_group: group.id, p_user: m.user_id, p_amount: amount }), `${amount > 0 ? "+" : ""}${amount} para ${m.display_name}.`);
+    run(() => sb().rpc("pal_grant_finos", { p_group: group.id, p_user: m.user_id, p_amount: amount }), `${m.display_name}: ${amount > 0 ? "+" : ""}${amount} finos (acertado).`);
 
   const setStatus = (m: AdminMember, status: string) =>
     run(() => sb().rpc("pal_set_member_status", { p_group: group.id, p_user: m.user_id, p_status: status }), "Atualizado.");
@@ -132,24 +132,36 @@ export default function LeoesAdmin({ group, isAdmin, members, rounds, selfId }: 
               </div>
               {m.status === "active" && (
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  {[1, 2, 5, 10].map((n) => (
-                    <button key={n} className={btnGhost} disabled={busy} onClick={() => grant(m, n)}>+{n}</button>
-                  ))}
+                  <label className="text-xs text-ink/70" htmlFor={`finos-${m.user_id}`}>Finos certos:</label>
                   <input
+                    id={`finos-${m.user_id}`}
                     inputMode="numeric"
-                    placeholder="outro"
+                    placeholder={String(Number(m.balance))}
                     value={amounts[m.user_id] ?? ""}
                     onChange={(e) => setAmounts({ ...amounts, [m.user_id]: e.target.value })}
-                    className="w-20 rounded-xl border border-line px-2 py-2 text-xs"
+                    className="w-20 rounded-xl border border-line px-2 py-2 text-sm"
                   />
                   <button
                     className={btn}
-                    disabled={busy || !Number.isInteger(Number(amounts[m.user_id])) || Number(amounts[m.user_id]) === 0}
+                    disabled={
+                      busy ||
+                      (amounts[m.user_id] ?? "").trim() === "" ||
+                      !Number.isInteger(Number(amounts[m.user_id])) ||
+                      Number(amounts[m.user_id]) < 0 ||
+                      Number(amounts[m.user_id]) === Number(m.balance)
+                    }
                     onClick={async () => {
-                      if (await grant(m, Number(amounts[m.user_id]))) setAmounts({ ...amounts, [m.user_id]: "" });
+                      const target = Number(amounts[m.user_id]);
+                      const delta = target - Number(m.balance);
+                      if (!Number.isInteger(delta)) return;
+                      if (delta < 0 && !isAdmin) {
+                        alert("Só o capitão pode diminuir finos.");
+                        return;
+                      }
+                      if (await grant(m, delta)) setAmounts({ ...amounts, [m.user_id]: "" });
                     }}
                   >
-                    Registar
+                    Guardar
                   </button>
                 </div>
               )}
@@ -166,7 +178,7 @@ export default function LeoesAdmin({ group, isAdmin, members, rounds, selfId }: 
             </li>
           ))}
         </ul>
-        {isAdmin && <p className="mt-3 text-[11px] text-ink/50">Para corrigir um engano, usa um valor negativo (ex: -2) no campo «outro».</p>}
+        <p className="mt-3 text-[11px] text-ink/50">Escreve o total de finos que o jogador deve ter e carrega em Guardar. A app acerta a diferença.</p>
       </section>
 
       {isAdmin && (
