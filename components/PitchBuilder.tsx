@@ -174,36 +174,38 @@ export function PitchBuilder({
 
       {assignments.some((id) => id) && (
         <div className="mt-4">
-          <p className="mb-2 text-xs font-semibold text-ink/60">
-            Toca num jogador em campo para o marcar capitão ou vice
+          <p className="mb-2 text-sm font-semibold text-ink">
+            Escolhe o capitão (C), que dobra os pontos, e o vice (VC)
           </p>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="divide-y divide-line rounded-xl border border-line bg-white">
             {assignments
               .filter((id): id is string => !!id)
               .map((id) => {
                 const p = byId.get(id);
                 if (!p) return null;
                 return (
-                  <div key={id} className="flex overflow-hidden rounded-full border border-line">
-                    <button
-                      onClick={() => onPickCaptain(id)}
-                      className={`px-2 py-1 text-[11px] font-semibold ${
-                        captain === id ? "bg-gold text-ink" : "bg-white text-ink/50"
-                      }`}
-                    >
-                      C
-                    </button>
-                    <span className="px-1.5 py-1 text-[11px] text-ink">
-                      {p.number} {p.name}
+                  <div key={id} className="flex items-center justify-between gap-2 px-3 py-2">
+                    <span className="min-w-0 truncate text-sm text-ink">
+                      <span className="font-semibold">{p.number}</span> {p.name}
                     </span>
-                    <button
-                      onClick={() => onPickViceCaptain(id)}
-                      className={`px-2 py-1 text-[11px] font-semibold ${
-                        viceCaptain === id ? "bg-blue text-white" : "bg-white text-ink/50"
-                      }`}
-                    >
-                      VC
-                    </button>
+                    <div className="flex shrink-0 gap-2">
+                      <button
+                        onClick={() => onPickCaptain(id)}
+                        className={`h-10 min-w-[48px] rounded-xl px-3 text-sm font-semibold ${
+                          captain === id ? "bg-gold text-ink" : "bg-line text-ink/60"
+                        }`}
+                      >
+                        C
+                      </button>
+                      <button
+                        onClick={() => onPickViceCaptain(id)}
+                        className={`h-10 min-w-[48px] rounded-xl px-3 text-sm font-semibold ${
+                          viceCaptain === id ? "bg-blue text-white" : "bg-line text-ink/60"
+                        }`}
+                      >
+                        VC
+                      </button>
+                    </div>
                   </div>
                 );
               })}

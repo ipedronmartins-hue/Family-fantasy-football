@@ -79,6 +79,13 @@ export function JornadaClient({
   const selectedCount = assignments.filter((id) => id).length;
   const benchCount = bench.filter((id) => id).length;
   const lineupDone = selectedCount === totalRequired && captain !== null && viceCaptain !== null;
+  const missing: string[] = [];
+  if (selectedCount < totalRequired) {
+    const n = totalRequired - selectedCount;
+    missing.push(`${n} jogador${n > 1 ? "es" : ""} no onze`);
+  }
+  if (captain === null) missing.push("o capitão (C)");
+  if (viceCaptain === null) missing.push("o vice (VC)");
   const outcome = deriveOutcome(goalsHome, goalsAway);
   const outcomeLabel =
     outcome === "home" ? `${homeLabel} vence` : outcome === "away" ? `${awayLabel} vence` : outcome === "draw" ? "Empate" : null;
@@ -97,8 +104,16 @@ export function JornadaClient({
     setMessage(null);
     setAssignments(next);
     const stillIn = new Set(next.filter((id) => id));
-    if (captain && !stillIn.has(captain)) setCaptain(null);
-    if (viceCaptain && !stillIn.has(viceCaptain)) setViceCaptain(null);
+    const lostC = !!captain && !stillIn.has(captain);
+    const lostVC = !!viceCaptain && !stillIn.has(viceCaptain);
+    if (lostC) setCaptain(null);
+    if (lostVC) setViceCaptain(null);
+    if (lostC || lostVC) {
+      setMessage({
+        ok: false,
+        text: `Saiu do onze o ${lostC && lostVC ? "capitão e o vice" : lostC ? "capitão" : "vice"}. Escolhe outro na lista abaixo do campo.`,
+      });
+    }
   }
 
   function pickCaptain(id: string) {
@@ -111,6 +126,10 @@ export function JornadaClient({
   }
 
   async function save() {
+    if (!lineupDone) {
+      setMessage({ ok: false, text: `Ainda falta: ${missing.join(", ")}.` });
+      return;
+    }
     setSaving(true);
     setMessage(null);
     const supabase = createBrowserSupabase();
@@ -327,15 +346,21 @@ export function JornadaClient({
       <div>
         <button
           onClick={save}
-          disabled={!lineupDone || saving}
-          className="w-full rounded-xl bg-blue py-3 text-sm font-semibold text-white disabled:opacity-40"
+          disabled={saving}
+          className={`w-full rounded-xl bg-blue py-3 text-sm font-semibold text-white ${
+            lineupDone ? "" : "opacity-50"
+          }`}
         >
           {saving ? "A guardar…" : "Guardar jornada"}
         </button>
         {!lineupDone && (
-          <p className="mt-2 text-center text-xs text-ink/50">
-            Falta o onze completo com capitão (C) e vice (VC) para poderes guardar.
-          </p>
+          <div className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs font-semibold">
+            <span className={selectedCount === totalRequired ? "text-blue" : "text-red"}>
+              {selectedCount === totalRequired ? "✓" : "✗"} Onze {selectedCount}/{totalRequired}
+            </span>
+            <span className={captain ? "text-blue" : "text-red"}>{captain ? "✓" : "✗"} Capitão</span>
+            <span className={viceCaptain ? "text-blue" : "text-red"}>{viceCaptain ? "✓" : "✗"} Vice</span>
+          </div>
         )}
         {lineupDone && guessesDone < 4 && (
           <p className="mt-2 text-center text-xs text-ink/50">
