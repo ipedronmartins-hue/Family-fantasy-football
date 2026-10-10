@@ -132,12 +132,8 @@ export default function LeoesHome({ group, member, balance, current, previous, l
 
           {s && (
             <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-              <div className="rounded-xl bg-white p-3 border border-line">
-                <p className="text-[11px] font-semibold text-ink/60">
-                  PRÉMIO ({fixtures.length} certos{superId ? " + Super 7" : ""})
-                </p>
-                <p className="font-semibold"><Money finos={s.prize1} value={group.fino_value} /></p>
-                {s.carry_in > 0 && <p className="text-[11px] text-ink/60">inclui {fmtFinos(s.carry_in)} acumulados</p>}
+              <div className="col-span-2 rounded-xl bg-white p-3 border border-line text-xs text-ink/70">
+                <span className="font-semibold text-ink">Prémio:</span> para quem acertar nos {fixtures.length} jogos{superId ? " e no Super 7" : ""}. Se ninguém acertar, acumula para a jornada seguinte.
               </div>
               <div className="col-span-2 rounded-xl bg-white p-3 border border-line text-xs text-ink/70">
                 {s.tickets} {s.tickets === 1 ? "boletim" : "boletins"} · {fmtFinos(s.pot)} finos em jogo{s.caixa !== null ? ` · ${fmtFinos(s.caixa)} para a caixa do clube` : ""}
@@ -264,8 +260,8 @@ export default function LeoesHome({ group, member, balance, current, previous, l
           {previous.summary && (
             <p className="mt-2 text-xs text-ink/60">
               {previous.summary.carry_out && previous.summary.carry_out > 0
-                ? `Sem vencedor num prémio: ${fmtFinos(previous.summary.carry_out)} finos acumulam para a jornada seguinte.`
-                : "Prémios entregues."}
+                ? "Sem vencedor: o prémio acumula para a jornada seguinte."
+                : "Prémio entregue."}
             </p>
           )}
           <TicketList tickets={previous.tickets} fixtures={previous.fixtures} title="Os teus boletins" superId={previous.round.super_fixture_id} />

@@ -80,10 +80,10 @@ export default async function LeoesPage() {
 
   const [{ data: ledger }, { data: openRound }, { data: lastSettled }, { data: board }] = await Promise.all([
     supabase.from("pal_ledger").select("delta").eq("group_id", group.id).eq("user_id", user.id),
-    supabase.from("pal_rounds").select("id, number, status, carry_in, bets_closed_at, super_fixture_id").eq("group_id", group.id).eq("status", "open").maybeSingle(),
+    supabase.from("pal_rounds").select("id, number, status, bets_closed_at, super_fixture_id").eq("group_id", group.id).eq("status", "open").maybeSingle(),
     supabase
       .from("pal_rounds")
-      .select("id, number, status, carry_in, bets_closed_at, super_fixture_id")
+      .select("id, number, status, bets_closed_at, super_fixture_id")
       .eq("group_id", group.id)
       .eq("status", "settled")
       .order("settled_at", { ascending: false })

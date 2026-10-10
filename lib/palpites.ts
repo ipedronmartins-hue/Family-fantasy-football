@@ -29,7 +29,6 @@ export interface PalRound {
   id: string;
   number: number;
   status: "open" | "settled";
-  carry_in: number;
   bets_closed_at: string | null;
   super_fixture_id: string | null;
 }
