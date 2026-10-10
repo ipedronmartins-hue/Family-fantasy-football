@@ -135,9 +135,6 @@ export default function LeoesHome({ group, member, balance, current, previous, l
               <div className="col-span-2 rounded-xl bg-white p-3 border border-line text-xs text-ink/70">
                 <span className="font-semibold text-ink">Prémio:</span> para quem acertar nos {fixtures.length} jogos{superId ? " e no Super 7" : ""}. Se ninguém acertar, acumula para a jornada seguinte.
               </div>
-              <div className="col-span-2 rounded-xl bg-white p-3 border border-line text-xs text-ink/70">
-                {s.tickets} {s.tickets === 1 ? "boletim" : "boletins"}
-              </div>
             </div>
           )}
 
