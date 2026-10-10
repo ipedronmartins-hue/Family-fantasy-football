@@ -36,6 +36,26 @@ export default async function LeoesAdminPage() {
       .order("number"),
   ]);
 
+  const { data: allRounds } = await supabase
+    .from("pal_rounds")
+    .select("id, number, status")
+    .eq("group_id", group.id)
+    .in("status", ["open", "settled"])
+    .order("number");
+  const caixaRows = await Promise.all(
+    (allRounds ?? []).map(async (r) => {
+      const { data } = await supabase.rpc("pal_round_summary", { p_round: r.id });
+      const s = Array.isArray(data) ? data[0] : data;
+      return {
+        number: r.number as number,
+        status: r.status as string,
+        tickets: Number(s?.tickets ?? 0),
+        pot: Number(s?.pot ?? 0),
+        caixa: s?.caixa === null || s?.caixa === undefined ? 0 : Number(s.caixa),
+      };
+    })
+  );
+
   const rounds: AdminRound[] = await Promise.all(
     (roundRows ?? []).map(async (r) => {
       const [{ data: fx }, { count }] = await Promise.all([
@@ -65,6 +85,7 @@ export default async function LeoesAdminPage() {
         isAdmin={me.is_admin}
         members={((members ?? []) as AdminMember[]).map((m) => ({ ...m, balance: Number(m.balance) }))}
         rounds={rounds}
+        caixaRows={caixaRows}
         selfId={user.id}
       />
     </div>

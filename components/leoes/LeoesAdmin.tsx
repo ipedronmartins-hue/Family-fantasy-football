@@ -21,6 +21,7 @@ interface Props {
   isAdmin: boolean;
   members: AdminMember[];
   rounds: AdminRound[];
+  caixaRows: { number: number; status: string; tickets: number; pot: number; caixa: number }[];
   selfId: string;
 }
 
@@ -29,7 +30,7 @@ const input = "w-full rounded-xl border border-line px-3 py-2 text-sm";
 const btn = "rounded-xl bg-blue px-3 py-2 text-xs font-semibold text-white disabled:opacity-50";
 const btnGhost = "rounded-xl border border-line bg-bg px-3 py-2 text-xs font-semibold text-ink disabled:opacity-50";
 
-export default function LeoesAdmin({ group, isAdmin, members, rounds, selfId }: Props) {
+export default function LeoesAdmin({ group, isAdmin, members, rounds, caixaRows, selfId }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
@@ -111,6 +112,40 @@ export default function LeoesAdmin({ group, isAdmin, members, rounds, selfId }: 
           </ul>
         </section>
       )}
+
+      <section className={card}>
+        <h2 className="font-display text-lg font-semibold">Caixa do clube</h2>
+        <p className="mt-1 text-xs text-ink/60">Só o capitão e o tesoureiro veem isto. Dinheiro que fica para o clube em cada jornada (o que sobra do pote depois do prémio).</p>
+        {(() => {
+          const eur = (n: number) => (group.fino_value ? ` (${(n * group.fino_value).toFixed(2).replace(".", ",")} €)` : "");
+          const settledTotal = caixaRows.filter((r) => r.status === "settled").reduce((a, r) => a + r.caixa, 0);
+          return (
+            <>
+              <p className="mt-3 font-display text-3xl font-semibold text-blue">
+                {fmtFinos(settledTotal)} <span className="text-base font-semibold">finos{eur(settledTotal)}</span>
+              </p>
+              <p className="text-[11px] text-ink/50">Total da época, só jornadas já apuradas.</p>
+              {caixaRows.length === 0 ? (
+                <p className="mt-3 text-sm text-ink/60">Ainda não há jornadas.</p>
+              ) : (
+                <ul className="mt-3 divide-y divide-line rounded-xl border border-line text-sm">
+                  {caixaRows.map((r) => (
+                    <li key={r.number} className="flex items-center justify-between px-3 py-2">
+                      <span>
+                        Jornada {r.number}{" "}
+                        <span className="text-[11px] text-ink/50">
+                          {r.status === "settled" ? "apurada" : "em curso (estimado)"} · {r.tickets} {r.tickets === 1 ? "boletim" : "boletins"} · pote {fmtFinos(r.pot)}
+                        </span>
+                      </span>
+                      <span className="font-semibold">{fmtFinos(r.caixa)}{eur(r.caixa)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          );
+        })()}
+      </section>
 
       <section className={card}>
         <h2 className="font-display text-lg font-semibold">Finos dos jogadores</h2>
