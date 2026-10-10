@@ -22,6 +22,7 @@ interface Props {
   members: AdminMember[];
   rounds: AdminRound[];
   caixaRows: { bets: { name: string; cost: number }[]; number: number; status: string; tickets: number; pot: number; caixa: number }[];
+  cash: { received: number; inWallets: number; betTotal: number };
   selfId: string;
 }
 
@@ -30,7 +31,7 @@ const input = "w-full rounded-xl border border-line px-3 py-2 text-sm";
 const btn = "rounded-xl bg-blue px-3 py-2 text-xs font-semibold text-white disabled:opacity-50";
 const btnGhost = "rounded-xl border border-line bg-bg px-3 py-2 text-xs font-semibold text-ink disabled:opacity-50";
 
-export default function LeoesAdmin({ group, isAdmin, members, rounds, caixaRows, selfId }: Props) {
+export default function LeoesAdmin({ group, isAdmin, members, rounds, caixaRows, cash, selfId }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
@@ -125,6 +126,12 @@ export default function LeoesAdmin({ group, isAdmin, members, rounds, caixaRows,
                 {fmtFinos(settledTotal)} <span className="text-base font-semibold">finos{eur(settledTotal)}</span>
               </p>
               <p className="text-[11px] text-ink/50">Total da época, só jornadas já apuradas.</p>
+              <div className="mt-3 rounded-xl border border-line bg-white/50 p-3 text-sm">
+                <p>Dinheiro recebido (finos entregues): <strong>{fmtFinos(cash.received)}</strong>{eur(cash.received)}</p>
+                <p>Já apostado: <strong>{fmtFinos(cash.betTotal)}</strong>{eur(cash.betTotal)}</p>
+                <p>Ainda nas carteiras dos jogadores: <strong>{fmtFinos(cash.inWallets)}</strong>{eur(cash.inWallets)}</p>
+                <p className="mt-1 text-[11px] text-ink/50">A caixa do clube só fica definida quando a jornada é apurada; até lá o que está apostado é só estimativa.</p>
+              </div>
               <p className="mt-2 text-sm">
                 Total apostado (todas as jornadas): <strong>{fmtFinos(caixaRows.reduce((x, r) => x + r.pot, 0))}</strong> · Caixa incluindo jornada em curso (estimada): <strong>{fmtFinos(caixaRows.reduce((x, r) => x + r.caixa, 0))}</strong>
               </p>

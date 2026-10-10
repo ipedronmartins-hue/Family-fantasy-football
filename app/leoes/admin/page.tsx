@@ -58,6 +58,14 @@ export default async function LeoesAdminPage() {
     })
   );
 
+  const { data: cashData } = await supabase.rpc("pal_cash_summary", { p_group: group.id });
+  const cashRow = Array.isArray(cashData) ? cashData[0] : cashData;
+  const cash = {
+    received: Number(cashRow?.received ?? 0),
+    inWallets: Number(cashRow?.in_wallets ?? 0),
+    betTotal: Number(cashRow?.bet_total ?? 0),
+  };
+
   const rounds: AdminRound[] = await Promise.all(
     (roundRows ?? []).map(async (r) => {
       const [{ data: fx }, { count }] = await Promise.all([
@@ -88,6 +96,7 @@ export default async function LeoesAdminPage() {
         members={((members ?? []) as AdminMember[]).map((m) => ({ ...m, balance: Number(m.balance) }))}
         rounds={rounds}
         caixaRows={caixaRows}
+        cash={cash}
         selfId={user.id}
       />
     </div>
