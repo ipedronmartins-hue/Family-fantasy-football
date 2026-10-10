@@ -21,7 +21,7 @@ interface Props {
   isAdmin: boolean;
   members: AdminMember[];
   rounds: AdminRound[];
-  caixaRows: { number: number; status: string; tickets: number; pot: number; caixa: number }[];
+  caixaRows: { bets: { name: string; cost: number }[]; number: number; status: string; tickets: number; pot: number; caixa: number }[];
   selfId: string;
 }
 
@@ -125,16 +125,24 @@ export default function LeoesAdmin({ group, isAdmin, members, rounds, caixaRows,
                 {fmtFinos(settledTotal)} <span className="text-base font-semibold">finos{eur(settledTotal)}</span>
               </p>
               <p className="text-[11px] text-ink/50">Total da época, só jornadas já apuradas.</p>
+              <p className="mt-2 text-sm">
+                Total apostado (todas as jornadas): <strong>{fmtFinos(caixaRows.reduce((x, r) => x + r.pot, 0))}</strong> · Caixa incluindo jornada em curso (estimada): <strong>{fmtFinos(caixaRows.reduce((x, r) => x + r.caixa, 0))}</strong>
+              </p>
               {caixaRows.length === 0 ? (
                 <p className="mt-3 text-sm text-ink/60">Ainda não há jornadas.</p>
               ) : (
                 <ul className="mt-3 divide-y divide-line rounded-xl border border-line text-sm">
                   {caixaRows.map((r) => (
                     <li key={r.number} className="flex items-center justify-between px-3 py-2">
-                      <span>
+                      <span className="min-w-0">
+                        {r.bets.length > 0 && (
+                          <span className="mb-1 block text-[11px] text-ink/70">
+                            {r.bets.map((b) => `${b.name} (${fmtFinos(b.cost)})`).join(" · ")}
+                          </span>
+                        )}
                         Jornada {r.number}{" "}
                         <span className="text-[11px] text-ink/50">
-                          {r.status === "settled" ? "apurada" : "em curso (estimado)"} · {r.tickets} {r.tickets === 1 ? "boletim" : "boletins"} · pote {fmtFinos(r.pot)}
+                          {r.status === "settled" ? "apurada" : "em curso (estimado)"} · {r.tickets} {r.tickets === 1 ? "boletim" : "boletins"} · total apostado {fmtFinos(r.pot)}
                         </span>
                       </span>
                       <span className="font-semibold">{fmtFinos(r.caixa)}{eur(r.caixa)}</span>

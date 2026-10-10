@@ -46,7 +46,9 @@ export default async function LeoesAdminPage() {
     (allRounds ?? []).map(async (r) => {
       const { data } = await supabase.rpc("pal_round_summary", { p_round: r.id });
       const s = Array.isArray(data) ? data[0] : data;
+      const { data: bets } = await supabase.rpc("pal_round_bets", { p_round: r.id });
       return {
+        bets: ((bets ?? []) as { display_name: string; cost: number }[]).map((b) => ({ name: b.display_name, cost: Number(b.cost) })),
         number: r.number as number,
         status: r.status as string,
         tickets: Number(s?.tickets ?? 0),
