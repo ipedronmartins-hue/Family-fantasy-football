@@ -132,7 +132,7 @@ export default function RoundsAdmin({ groupId, rounds, busy, run, onError }: Pro
       <button className={`${btn} mt-2`} disabled={busy || !text.trim()} onClick={bulkCreate}>
         Inserir jornadas
       </button>
-      <p className="mt-2 text-[11px] text-ink/50">Os palpites fecham sozinhos à hora do primeiro jogo de cada jornada. Entre 2 e 13 jogos.</p>
+      <p className="mt-2 text-[11px] text-ink/50">Os palpites ficam abertos até o capitão os fechar à mão (botão «Fechar palpites» em cada jornada). Entre 2 e 13 jogos.</p>
 
       {rounds.length === 0 && <p className="mt-4 text-sm text-ink/60">Ainda não há jornadas abertas ou agendadas.</p>}
 
@@ -147,9 +147,27 @@ export default function RoundsAdmin({ groupId, rounds, busy, run, onError }: Pro
                 <p className="text-sm font-semibold">
                   Jornada {round.number}{" "}
                   <span className={`text-[11px] ${isOpen ? "text-[#128C7E]" : "text-ink/50"}`}>
-                    {isOpen ? `aberta · ${ticketCount} ${ticketCount === 1 ? "boletim" : "boletins"}` : "agendada"}
+                    {isOpen ? `${round.bets_closed_at ? "palpites fechados" : "aberta"} · ${ticketCount} ${ticketCount === 1 ? "boletim" : "boletins"}` : "agendada"}
                   </span>
                 </p>
+                <div className="flex gap-2">
+                {isOpen && (
+                  <button
+                    className={btn}
+                    disabled={busy}
+                    onClick={() => {
+                      const closing = !round.bets_closed_at;
+                      if (!closing || confirm(`Fechar os palpites da jornada ${round.number}? Ninguém mais poderá apostar.`)) {
+                        run(
+                          () => sb().rpc("pal_set_bets_closed", { p_round: round.id, p_closed: closing }),
+                          closing ? "Palpites fechados." : "Palpites reabertos."
+                        );
+                      }
+                    }}
+                  >
+                    {round.bets_closed_at ? "Reabrir palpites" : "Fechar palpites"}
+                  </button>
+                )}
                 <button
                   className={btnGhost}
                   disabled={busy || ticketCount > 0}
@@ -161,6 +179,7 @@ export default function RoundsAdmin({ groupId, rounds, busy, run, onError }: Pro
                 >
                   Apagar
                 </button>
+                </div>
               </div>
 
               <ul className="mt-2 flex flex-col gap-2">

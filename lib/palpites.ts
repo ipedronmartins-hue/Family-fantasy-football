@@ -28,6 +28,7 @@ export interface PalRound {
   number: number;
   status: "open" | "settled";
   carry_in: number;
+  bets_closed_at: string | null;
 }
 
 export interface PalTicket {
@@ -95,7 +96,7 @@ export function palError(message: string | undefined): string {
   const table: [string, string][] = [
     ["insufficient finos", "Não tens finos suficientes para este boletim."],
     ["limit exceeded", "Passavas o teu limite de finos por jornada."],
-    ["round closed", "A jornada já fechou: o primeiro jogo já começou."],
+    ["round closed", "Os palpites desta jornada já foram fechados pelo capitão."],
     ["not an active member", "A tua conta ainda não foi aprovada."],
     ["not authorized", "Não tens permissão para isto."],
     ["round in progress", "Já há palpites nesta jornada: as regras só mudam depois de apurar."],

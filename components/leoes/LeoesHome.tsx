@@ -55,8 +55,7 @@ export default function LeoesHome({ group, member, balance, current, previous, l
 
   const cost = useMemo(() => slipCost(picks), [picks]);
   const used = (current?.tickets ?? []).reduce((a, t) => a + t.cost, 0);
-  const firstKickoff = fixtures.length ? Math.min(...fixtures.map((f) => new Date(f.kickoff).getTime())) : 0;
-  const closed = !current || (firstKickoff > 0 && Date.now() >= firstKickoff);
+  const closed = !current || current.round.status === "settled" || current.round.bets_closed_at !== null;
   const limitLeft = group.member_limit === null ? null : group.member_limit - used;
 
   function toggle(i: number, opt: string) {
@@ -115,7 +114,7 @@ export default function LeoesHome({ group, member, balance, current, previous, l
           <div className="flex items-baseline justify-between">
             <h2 className="font-display text-xl font-semibold text-ink">Jornada {current.round.number}</h2>
             <span className={`text-xs font-semibold ${closed ? "text-red" : "text-[#128C7E]"}`}>
-              {closed ? "Fechada" : `Fecha ${fmtKickoff(new Date(firstKickoff).toISOString())}`}
+              {closed ? "Fechada" : "Aberta · o capitão fecha os palpites"}
             </span>
           </div>
 
@@ -192,7 +191,7 @@ export default function LeoesHome({ group, member, balance, current, previous, l
 
           {closed && (
             <p className="mt-4 rounded-xl border border-line bg-white p-3 text-sm text-ink/70">
-              Os palpites desta jornada já fecharam. Os resultados e prémios aparecem quando o capitão apurar a jornada.
+              Os palpites desta jornada já foram fechados. Os resultados e prémios aparecem quando o capitão apurar a jornada.
             </p>
           )}
 

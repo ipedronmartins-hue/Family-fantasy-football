@@ -30,7 +30,7 @@ export default async function LeoesAdminPage() {
     supabase.rpc("pal_members_admin", { p_group: group.id }),
     supabase
       .from("pal_rounds")
-      .select("id, number, status, carry_in")
+      .select("id, number, status, carry_in, bets_closed_at")
       .eq("group_id", group.id)
       .in("status", ["open", "scheduled"])
       .order("number"),
