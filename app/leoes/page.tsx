@@ -114,7 +114,7 @@ export default async function LeoesPage() {
       fixtures: (fixtures ?? []) as PalFixture[],
       tickets: ((tickets ?? []) as PalTicket[]).map((t) => ({ ...t, cost: Number(t.cost), prize: Number(t.prize) })),
       summary: s
-        ? ({ ...s, pot: Number(s.pot), prize1: Number(s.prize1), prize2: Number(s.prize2), caixa: Number(s.caixa) } as PalSummary)
+        ? ({ ...s, pot: Number(s.pot), prize1: Number(s.prize1), prize2: Number(s.prize2), caixa: s.caixa === null ? null : Number(s.caixa) } as PalSummary)
         : null,
     };
   }

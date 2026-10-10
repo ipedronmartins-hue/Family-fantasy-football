@@ -51,7 +51,7 @@ export interface PalSummary {
   pot: number;
   prize1: number;
   prize2: number;
-  caixa: number;
+  caixa: number | null;
   carry_in: number;
   carry_out: number | null;
   overflow: number | null;

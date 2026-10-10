@@ -140,7 +140,7 @@ export default function LeoesHome({ group, member, balance, current, previous, l
                 {s.carry_in > 0 && <p className="text-[11px] text-ink/60">inclui {fmtFinos(s.carry_in)} acumulados</p>}
               </div>
               <div className="col-span-2 rounded-xl bg-white p-3 border border-line text-xs text-ink/70">
-                {s.tickets} {s.tickets === 1 ? "boletim" : "boletins"} · {fmtFinos(s.pot)} finos em jogo · {fmtFinos(s.caixa)} para a caixa do clube
+                {s.tickets} {s.tickets === 1 ? "boletim" : "boletins"} · {fmtFinos(s.pot)} finos em jogo{s.caixa !== null ? ` · ${fmtFinos(s.caixa)} para a caixa do clube` : ""}
               </div>
             </div>
           )}
