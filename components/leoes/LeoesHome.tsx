@@ -57,6 +57,7 @@ export default function LeoesHome({ group, member, balance, current, previous, l
 
   const cost = useMemo(() => slipCost(picks), [picks]);
   const superId = current?.round.super_fixture_id ?? null;
+  const superFix = superId ? fixtures.find((f) => f.id === superId) ?? null : null;
   const superOk = !superId || (/^\d{1,2}$/.test(superHome) && /^\d{1,2}$/.test(superAway));
   const used = (current?.tickets ?? []).reduce((a, t) => a + t.cost, 0);
   const closed = !current || current.round.status === "settled" || current.round.bets_closed_at !== null;
@@ -152,9 +153,6 @@ export default function LeoesHome({ group, member, balance, current, previous, l
                     <p className="text-[11px] text-ink/50">{fmtKickoff(f.kickoff)}</p>
                     <p className="text-sm font-semibold">
                       {f.home} – {f.away}
-                      {f.id === superId && (
-                        <span className="ml-2 rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold text-ink">SUPER 7</span>
-                      )}
                     </p>
                     <div className="mt-2 grid grid-cols-3 gap-2">
                       {OPTIONS.map((o) => {
@@ -174,36 +172,39 @@ export default function LeoesHome({ group, member, balance, current, previous, l
                         );
                       })}
                     </div>
-                    {f.id === superId && (
-                      <div className="mt-3 rounded-lg bg-gold/10 p-2">
-                        <p className="text-[11px] font-semibold text-ink/70">
-                          Super 7: acerta no resultado exato deste jogo (soma ao resto dos jogos)
-                        </p>
-                        <div className="mt-2 flex items-center gap-2">
-                          <input
-                            inputMode="numeric"
-                            maxLength={2}
-                            value={superHome}
-                            onChange={(e) => setSuperHome(e.target.value.replace(/\D/g, ""))}
-                            aria-label={`Golos ${f.home}`}
-                            className="w-14 rounded-xl border border-line px-2 py-2 text-center text-base font-semibold"
-                          />
-                          <span className="font-semibold">–</span>
-                          <input
-                            inputMode="numeric"
-                            maxLength={2}
-                            value={superAway}
-                            onChange={(e) => setSuperAway(e.target.value.replace(/\D/g, ""))}
-                            aria-label={`Golos ${f.away}`}
-                            className="w-14 rounded-xl border border-line px-2 py-2 text-center text-base font-semibold"
-                          />
-                          <span className="text-[11px] text-ink/50">sem custo extra</span>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
+
+              {superFix && (
+                <div className="mt-2 rounded-xl border-2 border-gold bg-white p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold text-ink">SUPER 7</span>
+                    <span className="text-[11px] text-ink/50">resultado exato · {fmtKickoff(superFix.kickoff)}</span>
+                  </div>
+                  <p className="mt-2 text-sm font-semibold">{superFix.home} – {superFix.away}</p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <input
+                      inputMode="numeric"
+                      maxLength={2}
+                      value={superHome}
+                      onChange={(e) => setSuperHome(e.target.value.replace(/\D/g, ""))}
+                      aria-label={`Golos ${superFix.home}`}
+                      className="w-16 rounded-xl border border-line px-2 py-2.5 text-center text-lg font-semibold"
+                    />
+                    <span className="font-semibold">–</span>
+                    <input
+                      inputMode="numeric"
+                      maxLength={2}
+                      value={superAway}
+                      onChange={(e) => setSuperAway(e.target.value.replace(/\D/g, ""))}
+                      aria-label={`Golos ${superFix.away}`}
+                      className="w-16 rounded-xl border border-line px-2 py-2.5 text-center text-lg font-semibold"
+                    />
+                  </div>
+                  <p className="mt-2 text-[11px] text-ink/50">Faz parte do boletim, sem custo extra: o prémio é de quem acertar em tudo, incluindo o Super 7.</p>
+                </div>
+              )}
 
               <div className="mt-4 rounded-2xl border border-line bg-white p-4">
                 <p className="text-sm">
