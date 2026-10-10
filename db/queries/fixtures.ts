@@ -57,11 +57,14 @@ export async function getNextFixture(seasonId: string, referenceDate: Date = new
     .maybeSingle();
   if (liveMatch) return mapRow(liveMatch as MatchRow);
 
+  // A jornada em curso só muda quando o admin marca o jogo como terminado
+  // (nada fecha sozinho): o primeiro jogo por terminar, mesmo que a hora do
+  // apito inicial já tenha passado.
   const { data, error } = await supabase
     .from("matches")
     .select(SELECT)
     .eq("season_id", seasonId)
-    .gte("kickoff_at", referenceDate.toISOString())
+    .neq("status", "finished")
     .order("kickoff_at")
     .limit(1)
     .maybeSingle();
