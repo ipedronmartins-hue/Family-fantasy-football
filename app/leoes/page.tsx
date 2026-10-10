@@ -80,10 +80,10 @@ export default async function LeoesPage() {
 
   const [{ data: ledger }, { data: openRound }, { data: lastSettled }, { data: board }] = await Promise.all([
     supabase.from("pal_ledger").select("delta").eq("group_id", group.id).eq("user_id", user.id),
-    supabase.from("pal_rounds").select("id, number, status, carry_in, bets_closed_at").eq("group_id", group.id).eq("status", "open").maybeSingle(),
+    supabase.from("pal_rounds").select("id, number, status, carry_in, bets_closed_at, super_fixture_id").eq("group_id", group.id).eq("status", "open").maybeSingle(),
     supabase
       .from("pal_rounds")
-      .select("id, number, status, carry_in, bets_closed_at")
+      .select("id, number, status, carry_in, bets_closed_at, super_fixture_id")
       .eq("group_id", group.id)
       .eq("status", "settled")
       .order("settled_at", { ascending: false })
@@ -99,10 +99,10 @@ export default async function LeoesPage() {
   async function loadRound(r: PalRound | null) {
     if (!r) return null;
     const [{ data: fixtures }, { data: tickets }, { data: summary }] = await Promise.all([
-      supabase.from("pal_fixtures").select("id, position, home, away, kickoff, result").eq("round_id", r.id).order("position"),
+      supabase.from("pal_fixtures").select("id, position, home, away, kickoff, result, score_home, score_away").eq("round_id", r.id).order("position"),
       supabase
         .from("pal_tickets")
-        .select("id, picks, cost, best_hits, prize, settled, created_at")
+        .select("id, picks, cost, best_hits, prize, settled, created_at, super_home, super_away, super_hit")
         .eq("round_id", r.id)
         .eq("user_id", user!.id)
         .order("created_at"),

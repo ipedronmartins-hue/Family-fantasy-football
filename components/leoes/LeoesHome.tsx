@@ -49,11 +49,15 @@ export default function LeoesHome({ group, member, balance, current, previous, l
   const router = useRouter();
   const fixtures = current?.fixtures ?? [];
   const [picks, setPicks] = useState<string[][]>(() => fixtures.map(() => []));
+  const [superHome, setSuperHome] = useState("");
+  const [superAway, setSuperAway] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [okMsg, setOkMsg] = useState<string | null>(null);
 
   const cost = useMemo(() => slipCost(picks), [picks]);
+  const superId = current?.round.super_fixture_id ?? null;
+  const superOk = !superId || (/^\d{1,2}$/.test(superHome) && /^\d{1,2}$/.test(superAway));
   const used = (current?.tickets ?? []).reduce((a, t) => a + t.cost, 0);
   const closed = !current || current.round.status === "settled" || current.round.bets_closed_at !== null;
   const limitLeft = group.member_limit === null ? null : group.member_limit - used;
@@ -71,13 +75,20 @@ export default function LeoesHome({ group, member, balance, current, previous, l
     setError(null);
     setOkMsg(null);
     const supabase = createBrowserSupabase();
-    const { error } = await supabase.rpc("pal_place_ticket", { p_round: current.round.id, p_picks: picks });
+    const { error } = await supabase.rpc("pal_place_bet", {
+      p_round: current.round.id,
+      p_picks: picks,
+      p_super_home: superId ? Number(superHome) : null,
+      p_super_away: superId ? Number(superAway) : null,
+    });
     setBusy(false);
     if (error) {
       setError(palError(error.message));
       return;
     }
     setPicks(fixtures.map(() => []));
+    setSuperHome("");
+    setSuperAway("");
     setOkMsg("Boletim registado. Boa sorte!");
     router.refresh();
   }
@@ -121,13 +132,11 @@ export default function LeoesHome({ group, member, balance, current, previous, l
           {s && (
             <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
               <div className="rounded-xl bg-white p-3 border border-line">
-                <p className="text-[11px] font-semibold text-ink/60">1.º PRÉMIO (6 certos)</p>
+                <p className="text-[11px] font-semibold text-ink/60">
+                  PRÉMIO ({fixtures.length} certos{superId ? " + Super 7" : ""})
+                </p>
                 <p className="font-semibold"><Money finos={s.prize1} value={group.fino_value} /></p>
                 {s.carry_in > 0 && <p className="text-[11px] text-ink/60">inclui {fmtFinos(s.carry_in)} acumulados</p>}
-              </div>
-              <div className="rounded-xl bg-white p-3 border border-line">
-                <p className="text-[11px] font-semibold text-ink/60">2.º PRÉMIO (1 errado)</p>
-                <p className="font-semibold"><Money finos={s.prize2} value={group.fino_value} /></p>
               </div>
               <div className="col-span-2 rounded-xl bg-white p-3 border border-line text-xs text-ink/70">
                 {s.tickets} {s.tickets === 1 ? "boletim" : "boletins"} · {fmtFinos(s.pot)} finos em jogo · {fmtFinos(s.caixa)} para a caixa do clube
@@ -141,7 +150,12 @@ export default function LeoesHome({ group, member, balance, current, previous, l
                 {fixtures.map((f, i) => (
                   <div key={f.id} className="rounded-xl border border-line bg-white p-3">
                     <p className="text-[11px] text-ink/50">{fmtKickoff(f.kickoff)}</p>
-                    <p className="text-sm font-semibold">{f.home} – {f.away}</p>
+                    <p className="text-sm font-semibold">
+                      {f.home} – {f.away}
+                      {f.id === superId && (
+                        <span className="ml-2 rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold text-ink">SUPER 7</span>
+                      )}
+                    </p>
                     <div className="mt-2 grid grid-cols-3 gap-2">
                       {OPTIONS.map((o) => {
                         const on = picks[i]?.includes(o);
@@ -160,6 +174,33 @@ export default function LeoesHome({ group, member, balance, current, previous, l
                         );
                       })}
                     </div>
+                    {f.id === superId && (
+                      <div className="mt-3 rounded-lg bg-gold/10 p-2">
+                        <p className="text-[11px] font-semibold text-ink/70">
+                          Super 7: acerta no resultado exato deste jogo (soma ao resto dos jogos)
+                        </p>
+                        <div className="mt-2 flex items-center gap-2">
+                          <input
+                            inputMode="numeric"
+                            maxLength={2}
+                            value={superHome}
+                            onChange={(e) => setSuperHome(e.target.value.replace(/\D/g, ""))}
+                            aria-label={`Golos ${f.home}`}
+                            className="w-14 rounded-xl border border-line px-2 py-2 text-center text-base font-semibold"
+                          />
+                          <span className="font-semibold">–</span>
+                          <input
+                            inputMode="numeric"
+                            maxLength={2}
+                            value={superAway}
+                            onChange={(e) => setSuperAway(e.target.value.replace(/\D/g, ""))}
+                            aria-label={`Golos ${f.away}`}
+                            className="w-14 rounded-xl border border-line px-2 py-2 text-center text-base font-semibold"
+                          />
+                          <span className="text-[11px] text-ink/50">sem custo extra</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -175,7 +216,7 @@ export default function LeoesHome({ group, member, balance, current, previous, l
                 <button
                   type="button"
                   onClick={place}
-                  disabled={busy || cost === 0 || cantAfford || overLimit}
+                  disabled={busy || cost === 0 || cantAfford || overLimit || !superOk}
                   className="mt-3 w-full rounded-xl bg-blue py-3 text-sm font-semibold text-white disabled:opacity-50"
                 >
                   {busy ? "A registar…" : "Registar boletim"}
@@ -183,6 +224,7 @@ export default function LeoesHome({ group, member, balance, current, previous, l
                 {cost > 0 && cantAfford && <p className="mt-2 text-xs text-red">Não tens finos suficientes. Fala com o tesoureiro.</p>}
                 {cost > 0 && !cantAfford && overLimit && <p className="mt-2 text-xs text-red">Passavas o limite por jornada.</p>}
                 {cost === 0 && <p className="mt-2 text-xs text-ink/60">Marca pelo menos uma opção em cada jogo.</p>}
+                {cost > 0 && !superOk && <p className="mt-2 text-xs text-ink/60">Falta o resultado do Super 7 (golos das duas equipas).</p>}
                 {error && <p className="mt-2 text-xs text-red">{error}</p>}
                 {okMsg && <p className="mt-2 text-xs text-[#128C7E]">{okMsg}</p>}
               </div>
@@ -195,7 +237,7 @@ export default function LeoesHome({ group, member, balance, current, previous, l
             </p>
           )}
 
-          <TicketList tickets={current.tickets} fixtures={fixtures} title="Os teus boletins" />
+          <TicketList tickets={current.tickets} fixtures={fixtures} title="Os teus boletins" superId={superId} />
         </section>
       ) : (
         <p className="mt-6 rounded-xl border border-line bg-white p-4 text-sm text-ink/70">
@@ -210,7 +252,11 @@ export default function LeoesHome({ group, member, balance, current, previous, l
             {previous.fixtures.map((f) => (
               <li key={f.id} className="flex items-center justify-between px-3 py-2">
                 <span>{f.home} – {f.away}</span>
-                <span className="font-display text-base font-semibold text-blue">{f.result}</span>
+                <span className="font-display text-base font-semibold text-blue">
+                  {f.id === previous.round.super_fixture_id && f.score_home !== null
+                    ? `${f.score_home}-${f.score_away}`
+                    : f.result}
+                </span>
               </li>
             ))}
           </ul>
@@ -221,7 +267,7 @@ export default function LeoesHome({ group, member, balance, current, previous, l
                 : "Prémios entregues."}
             </p>
           )}
-          <TicketList tickets={previous.tickets} fixtures={previous.fixtures} title="Os teus boletins" />
+          <TicketList tickets={previous.tickets} fixtures={previous.fixtures} title="Os teus boletins" superId={previous.round.super_fixture_id} />
         </section>
       )}
 
@@ -254,7 +300,7 @@ export default function LeoesHome({ group, member, balance, current, previous, l
   );
 }
 
-function TicketList({ tickets, fixtures, title }: { tickets: PalTicket[]; fixtures: PalFixture[]; title: string }) {
+function TicketList({ tickets, fixtures, title, superId }: { tickets: PalTicket[]; fixtures: PalFixture[]; title: string; superId: string | null }) {
   if (tickets.length === 0) return null;
   return (
     <div className="mt-4">
@@ -266,13 +312,19 @@ function TicketList({ tickets, fixtures, title }: { tickets: PalTicket[]; fixtur
               <span>{fmtFinos(t.cost)} {t.cost === 1 ? "fino" : "finos"}</span>
               {t.settled && (
                 <span className={t.prize > 0 ? "text-[#128C7E]" : "text-ink/50"}>
-                  {t.best_hits} certos{t.prize > 0 ? ` · ganhou ${fmtFinos(t.prize)}` : ""}
+                  {t.best_hits} certos{superId ? " (com Super 7)" : ""}{t.prize > 0 ? ` · ganhou ${fmtFinos(t.prize)}` : ""}
                 </span>
               )}
             </div>
             <p className="mt-1 break-words text-ink/70">
               {t.picks.map((p, i) => `${fixtures[i]?.position ?? i + 1}:${p.join("")}`).join("  ")}
             </p>
+            {t.super_home !== null && t.super_away !== null && (
+              <p className="mt-1 text-ink/70">
+                Super 7: {t.super_home}-{t.super_away}
+                {t.settled && t.super_hit !== null ? (t.super_hit ? " ✓" : " ✗") : ""}
+              </p>
+            )}
           </li>
         ))}
       </ul>

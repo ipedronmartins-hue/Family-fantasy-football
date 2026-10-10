@@ -80,6 +80,7 @@ export default function RoundsAdmin({ groupId, rounds, busy, run, onError }: Pro
   const [text, setText] = useState("");
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState({ home: "", away: "", kickoff: "" });
+  const [scores, setScores] = useState<Record<string, { h: string; a: string }>>({});
   const sb = () => createBrowserSupabase();
 
   async function bulkCreate() {
@@ -132,7 +133,7 @@ export default function RoundsAdmin({ groupId, rounds, busy, run, onError }: Pro
       <button className={`${btn} mt-2`} disabled={busy || !text.trim()} onClick={bulkCreate}>
         Inserir jornadas
       </button>
-      <p className="mt-2 text-[11px] text-ink/50">Os palpites ficam abertos até o capitão os fechar à mão (botão «Fechar palpites» em cada jornada). Entre 2 e 13 jogos.</p>
+      <p className="mt-2 text-[11px] text-ink/50">Os palpites ficam abertos até o capitão os fechar à mão (botão «Fechar palpites» em cada jornada). Entre 2 e 13 jogos. Em cada jornada escolhe um jogo «Super 7» (resultado exato): o prémio é de quem acertar tudo, incluindo o Super 7.</p>
 
       {rounds.length === 0 && <p className="mt-4 text-sm text-ink/60">Ainda não há jornadas abertas ou agendadas.</p>}
 
@@ -226,13 +227,76 @@ export default function RoundsAdmin({ groupId, rounds, busy, run, onError }: Pro
                           <div className="flex items-start justify-between gap-2">
                             <div>
                               <p className="text-[11px] text-ink/50">{fmtKickoff(f.kickoff)}</p>
-                              <p className="font-semibold">{f.home} – {f.away}</p>
+                              <p className="font-semibold">
+                                {f.home} – {f.away}
+                                {f.id === round.super_fixture_id && (
+                                  <span className="ml-2 rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold text-ink">SUPER 7</span>
+                                )}
+                              </p>
                             </div>
-                            {!f.result && (
-                              <button className={btnGhost} disabled={busy} onClick={() => startEdit(f)}>Editar</button>
-                            )}
+                            <div className="flex gap-1">
+                              {ticketCount === 0 && !f.result && (
+                                <button
+                                  className={btnGhost}
+                                  disabled={busy}
+                                  onClick={() =>
+                                    run(
+                                      () =>
+                                        sb().rpc("pal_set_super_fixture", {
+                                          p_round: round.id,
+                                          p_fixture: f.id === round.super_fixture_id ? null : f.id,
+                                        }),
+                                      f.id === round.super_fixture_id ? "Super 7 retirado." : "Jogo Super 7 escolhido."
+                                    )
+                                  }
+                                >
+                                  {f.id === round.super_fixture_id ? "Tirar Super 7" : "Super 7"}
+                                </button>
+                              )}
+                              {!f.result && (
+                                <button className={btnGhost} disabled={busy} onClick={() => startEdit(f)}>Editar</button>
+                              )}
+                            </div>
                           </div>
-                          {isOpen && started && (
+                          {isOpen && started && f.id === round.super_fixture_id && (
+                            <div className="mt-2 flex items-center gap-2">
+                              <input
+                                inputMode="numeric"
+                                maxLength={2}
+                                placeholder={f.score_home?.toString() ?? "0"}
+                                value={scores[f.id]?.h ?? ""}
+                                onChange={(e) => setScores({ ...scores, [f.id]: { h: e.target.value.replace(/\D/g, ""), a: scores[f.id]?.a ?? "" } })}
+                                aria-label="Golos casa"
+                                className="w-14 rounded-xl border border-line px-2 py-2 text-center text-base font-semibold"
+                              />
+                              <span className="font-semibold">–</span>
+                              <input
+                                inputMode="numeric"
+                                maxLength={2}
+                                placeholder={f.score_away?.toString() ?? "0"}
+                                value={scores[f.id]?.a ?? ""}
+                                onChange={(e) => setScores({ ...scores, [f.id]: { h: scores[f.id]?.h ?? "", a: e.target.value.replace(/\D/g, "") } })}
+                                aria-label="Golos fora"
+                                className="w-14 rounded-xl border border-line px-2 py-2 text-center text-base font-semibold"
+                              />
+                              <button
+                                className={btn}
+                                disabled={busy || !scores[f.id]?.h || !scores[f.id]?.a}
+                                onClick={() =>
+                                  run(
+                                    () => sb().rpc("pal_set_super_score", { p_fixture: f.id, p_home: Number(scores[f.id].h), p_away: Number(scores[f.id].a) }),
+                                    "Resultado exato guardado."
+                                  )
+                                }
+                              >
+                                Guardar resultado
+                              </button>
+                              {f.score_home !== null && (
+                                <span className="text-xs text-ink/60">Registado: {f.score_home}-{f.score_away}</span>
+                              )}
+                            </div>
+                          )}
+                          {isOpen && started && f.id !== round.super_fixture_id && (
                             <div className="mt-2 flex gap-2">
                               {(["1", "X", "2"] as const).map((o) => (
                                 <button

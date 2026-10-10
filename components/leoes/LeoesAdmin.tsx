@@ -199,8 +199,7 @@ export default function LeoesAdmin({ group, isAdmin, members, rounds, selfId }: 
             {[
               ["fino_value", "Valor de 1 fino (€, opcional)"],
               ["limit", "Limite de finos por jogador e jornada"],
-              ["p1", "% do bolo para o 1.º prémio"],
-              ["p2", "% do bolo para o 2.º prémio"],
+              ["p1", "% do bolo para o prémio"],
               ["cap", "Teto do acumulado (finos, opcional)"],
             ].map(([key, label]) => (
               <label key={key} className="flex flex-col gap-1 font-semibold text-ink/70">

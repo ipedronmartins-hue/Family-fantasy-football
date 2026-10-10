@@ -21,6 +21,8 @@ export interface PalFixture {
   away: string;
   kickoff: string;
   result: "1" | "X" | "2" | null;
+  score_home: number | null;
+  score_away: number | null;
 }
 
 export interface PalRound {
@@ -29,6 +31,7 @@ export interface PalRound {
   status: "open" | "settled";
   carry_in: number;
   bets_closed_at: string | null;
+  super_fixture_id: string | null;
 }
 
 export interface PalTicket {
@@ -39,6 +42,9 @@ export interface PalTicket {
   prize: number;
   settled: boolean;
   created_at: string;
+  super_home: number | null;
+  super_away: number | null;
+  super_hit: boolean | null;
 }
 
 export interface PalSummary {
@@ -108,6 +114,9 @@ export function palError(message: string | undefined): string {
     ["invalid kickoff", "Hora inválida. Usa o formato 2026-10-17 15:00."],
     ["invalid fixtures", "Jogos inválidos: precisa de entre 2 e 13 jogos com duas equipas diferentes."],
     ["not started", "Esse jogo ainda não começou."],
+    ["invalid super", "Falta o resultado do Super 7: golos de cada equipa (0 a 50)."],
+    ["super fixture", "O jogo Super 7 regista-se pelo resultado exato (golos)."],
+    ["invalid score", "Resultado inválido: golos entre 0 e 50."],
     ["negative balance", "O saldo não pode ficar negativo."],
     ["invalid amount", "Quantidade inválida."],
     ["percentages over 100", "A soma dos prémios passa os 100%."],

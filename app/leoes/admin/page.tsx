@@ -30,7 +30,7 @@ export default async function LeoesAdminPage() {
     supabase.rpc("pal_members_admin", { p_group: group.id }),
     supabase
       .from("pal_rounds")
-      .select("id, number, status, carry_in, bets_closed_at")
+      .select("id, number, status, carry_in, bets_closed_at, super_fixture_id")
       .eq("group_id", group.id)
       .in("status", ["open", "scheduled"])
       .order("number"),
@@ -39,7 +39,7 @@ export default async function LeoesAdminPage() {
   const rounds: AdminRound[] = await Promise.all(
     (roundRows ?? []).map(async (r) => {
       const [{ data: fx }, { count }] = await Promise.all([
-        supabase.from("pal_fixtures").select("id, position, home, away, kickoff, result").eq("round_id", r.id).order("position"),
+        supabase.from("pal_fixtures").select("id, position, home, away, kickoff, result, score_home, score_away").eq("round_id", r.id).order("position"),
         supabase.from("pal_tickets").select("id", { count: "exact", head: true }).eq("round_id", r.id),
       ]);
       return {
