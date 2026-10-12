@@ -19,6 +19,7 @@ const CATEGORY_OPTIONS = [
   { value: "torneios", label: "Torneios" },
   { value: "inscricoes", label: "Inscrições" },
   { value: "material", label: "Material" },
+  { value: "lanches", label: "Lanches e sumos" },
 ];
 
 export function FundEntryForm({ seasonId, entries }: { seasonId: string; entries: FundEntryRow[] }) {

@@ -9,6 +9,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   torneios: "Torneios",
   inscricoes: "Inscrições",
   material: "Material",
+  lanches: "Lanches e sumos",
   servidor: "Servidor (alojamento da plataforma)",
   outros: "Outros",
 };
