@@ -36,12 +36,23 @@ export default async function FundoPage({ params }: { params: Promise<{ teamSlug
   const quotaTotal = (payments ?? []).reduce((s, p) => s + p.amount, 0);
   const outrasEntradas = receitas - quotaTotal;
 
-  const byCategory = entries
+  const fmtMonth = new Intl.DateTimeFormat("pt-PT", { month: "long", year: "numeric", timeZone: "Europe/Lisbon" });
+  const monthKey = (iso: string) => {
+    const d = new Date(iso);
+    const parts = new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "2-digit", timeZone: "Europe/Lisbon" }).format(d);
+    return parts.slice(0, 7);
+  };
+  const byMonth = entries
     .filter((e) => e.entry_type === "despesa")
-    .reduce<Record<string, number>>((acc, e) => {
-      acc[e.category] = (acc[e.category] ?? 0) + e.amount;
+    .reduce<Record<string, { label: string; total: number; cats: Record<string, number> }>>((acc, e) => {
+      const key = monthKey(e.created_at);
+      const label = fmtMonth.format(new Date(e.created_at));
+      const m = (acc[key] ??= { label: label.charAt(0).toUpperCase() + label.slice(1), total: 0, cats: {} });
+      m.total += e.amount;
+      m.cats[e.category] = (m.cats[e.category] ?? 0) + e.amount;
       return acc;
     }, {});
+  const months = Object.entries(byMonth).sort(([x], [y]) => x.localeCompare(y));
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col pb-20">
@@ -75,20 +86,31 @@ export default async function FundoPage({ params }: { params: Promise<{ teamSlug
 
         <div className="mb-4 rounded-2xl border border-line bg-white p-4">
           <p className="mb-2 text-xs font-semibold text-ink/60">DESPESAS</p>
-          {Object.keys(byCategory).length === 0 ? (
+          {months.length === 0 ? (
             <p className="text-sm text-ink/50">Ainda sem despesas registadas.</p>
           ) : (
-            <ul>
-              {Object.entries(byCategory).map(([category, amount]) => (
-                <li
-                  key={category}
-                  className="flex items-center justify-between border-b border-line py-2 text-sm last:border-b-0"
-                >
-                  <span className="text-ink">{CATEGORY_LABELS[category] ?? category}</span>
-                  <span className="font-semibold text-ink">-{amount.toFixed(2)} €</span>
-                </li>
+            <div className="space-y-4">
+              {months.map(([key, m]) => (
+                <div key={key}>
+                  <div className="flex items-center justify-between border-b border-line pb-1 text-sm font-semibold text-blue">
+                    <span>{m.label}</span>
+                    <span>-{m.total.toFixed(2)} €</span>
+                  </div>
+                  <ul>
+                    {Object.entries(m.cats).map(([category, amount]) => (
+                      <li key={category} className="flex items-center justify-between py-1.5 text-sm">
+                        <span className="text-ink">{CATEGORY_LABELS[category] ?? category}</span>
+                        <span className="text-ink/80">-{amount.toFixed(2)} €</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
+              <div className="flex items-center justify-between border-t border-line pt-2 text-sm font-semibold">
+                <span>Total</span>
+                <span>-{despesas.toFixed(2)} €</span>
+              </div>
+            </div>
           )}
         </div>
 
