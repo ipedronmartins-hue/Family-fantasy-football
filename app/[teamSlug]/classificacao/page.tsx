@@ -9,6 +9,12 @@ interface LeaderboardRow {
   total_points: number;
 }
 
+interface MatchdayRow {
+  matchday: number;
+  team_name: string;
+  points: number;
+}
+
 interface MotmTallyRow {
   player_id: string;
   player_name: string;
@@ -20,7 +26,7 @@ export default async function ClassificacaoPage({ params }: { params: Promise<{ 
   const { teamSlug } = await params;
   const team = await getTeamBySlug(teamSlug);
 
-  const [{ data, error }, { data: motmData }] = await Promise.all([
+  const [{ data, error }, { data: motmData }, { data: mdData }] = await Promise.all([
     supabase
       .from("season_leaderboard")
       .select("fantasy_team_id, team_name, total_points")
@@ -31,7 +37,24 @@ export default async function ClassificacaoPage({ params }: { params: Promise<{ 
       .select("player_id, player_name, shirt_number, awards")
       .eq("season_id", team.seasonId)
       .order("awards", { ascending: false }),
+    supabase
+      .from("matchday_leaderboard")
+      .select("matchday, team_name, points")
+      .eq("season_id", team.seasonId),
   ]);
+
+  // Vencedor(es) de cada jornada (empates aparecem todos).
+  const byMatchday = new Map<number, MatchdayRow[]>();
+  for (const r of (mdData as MatchdayRow[] | null) ?? []) {
+    byMatchday.set(r.matchday, [...(byMatchday.get(r.matchday) ?? []), r]);
+  }
+  const matchdayWinners = Array.from(byMatchday.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([matchday, rows]) => {
+      const max = Math.max(...rows.map((r) => r.points));
+      return { matchday, points: max, winners: max > 0 ? rows.filter((r) => r.points === max).map((r) => r.team_name.trim()) : [] };
+    })
+    .filter((m) => m.winners.length > 0);
 
   const motmTally = (motmData as MotmTallyRow[] | null) ?? [];
 
@@ -95,6 +118,27 @@ export default async function ClassificacaoPage({ params }: { params: Promise<{ 
               </li>
             ))}
           </ul>
+        )}
+
+        {matchdayWinners.length > 0 && (
+          <>
+            <h2 className="mb-2 mt-8 font-display text-lg font-semibold text-ink">🏅 Vencedor por jornada</h2>
+            <ul className="rounded-2xl border border-line bg-white px-4">
+              {matchdayWinners.map((m) => (
+                <li
+                  key={m.matchday}
+                  className="grid grid-cols-[64px_1fr_auto] items-center gap-2 border-b border-line py-3 text-sm last:border-b-0"
+                >
+                  <span className="font-display font-semibold text-ink/50">J{m.matchday}</span>
+                  <span className="text-ink">
+                    {m.winners.length > 3 ? `Empate entre ${m.winners.length} equipas` : m.winners.join(" · ")}
+                    {m.winners.length > 1 && m.winners.length <= 3 ? " (empate)" : ""}
+                  </span>
+                  <span className="font-display font-semibold text-blue">{m.points} pts</span>
+                </li>
+              ))}
+            </ul>
+          </>
         )}
 
         {podiumTiers.length > 0 && (
