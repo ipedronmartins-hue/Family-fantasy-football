@@ -209,6 +209,38 @@ export function AdminMatchForm({
     setMessage(error ? error.message : "Pontos recalculados (Previsão + Equipa) para todos os pais.");
   }
 
+  async function closeAndCalculate() {
+    if (homeGoals === "" || awayGoals === "") {
+      setMessage("Falta o resultado final (golos casa e fora).");
+      return;
+    }
+    if (!window.confirm("Fechar o jogo e calcular todos os pontos? Podes voltar a calcular depois se corrigires algo.")) return;
+    setBusy(true);
+    setMessage(null);
+    const supabase = createBrowserSupabase();
+    const patch: Record<string, unknown> = {
+      home_goals: Number(homeGoals),
+      away_goals: Number(awayGoals),
+      status: "finished",
+    };
+    if (!locked) patch.locked_at = new Date().toISOString();
+    const { error: upError } = await supabase.from("matches").update(patch).eq("id", matchId);
+    if (upError) {
+      setBusy(false);
+      setMessage(upError.message);
+      return;
+    }
+    setStatus("finished");
+    setLocked(true);
+    const [predResult, ownResult] = await Promise.all([
+      supabase.rpc("recalculate_match_points", { p_match_id: matchId }),
+      supabase.rpc("recalculate_ownership_points", { p_match_id: matchId }),
+    ]);
+    setBusy(false);
+    const error = predResult.error || ownResult.error;
+    setMessage(error ? error.message : "Jogo fechado e pontos calculados (Previsão + Equipa).");
+  }
+
   return (
     <div className="space-y-5">
       <section className="rounded-2xl border border-line bg-white p-4">
@@ -414,6 +446,16 @@ export function AdminMatchForm({
       >
         Recalcular pontos (Previsão + Equipa)
       </button>
+      <button
+        onClick={closeAndCalculate}
+        disabled={busy}
+        className="w-full rounded-xl bg-blue py-3.5 text-sm font-semibold text-white disabled:opacity-50"
+      >
+        ✅ Fechar jogo e calcular tudo
+      </button>
+      <p className="text-center text-[11px] text-ink/50">
+        Guarda o resultado, fecha as previsões, marca o jogo como terminado e calcula os pontos de uma só vez.
+      </p>
       {message && <p className="text-center text-xs text-blue">{message}</p>}
     </div>
   );
