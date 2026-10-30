@@ -63,6 +63,18 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
     ? "Acesso suspenso"
     : "Montar a minha equipa";
 
+  let ownerTeams: { slug: string; label: string }[] = [];
+  if (hasTeam && parent.isPlatformOwner) {
+    const { data: allTeams } = await supabase
+      .from("teams")
+      .select("slug, name, clubs(name)")
+      .order("created_at");
+    ownerTeams = (allTeams ?? []).map((t) => ({
+      slug: t.slug as string,
+      label: `${(t.clubs as unknown as { name: string } | null)?.name ?? ""} ${t.name}`.trim(),
+    }));
+  }
+
   let pendingParents = 0;
   if (hasTeam && parent.isAdmin) {
     const sb = await createServerSupabase();
@@ -357,6 +369,25 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
             </Link>
           )}
         </div>
+
+        {hasTeam && parent.isPlatformOwner && ownerTeams.length > 1 && (
+          <div className="mb-4 rounded-2xl border border-line bg-white p-3">
+            <p className="mb-2 text-center text-xs font-semibold text-ink/60">Mudar de equipa (admin)</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {ownerTeams.map((t) => (
+                <Link
+                  key={t.slug}
+                  href={`/${t.slug}`}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
+                    t.slug === teamSlug ? "border-blue bg-blue text-white" : "border-line text-ink"
+                  }`}
+                >
+                  {t.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {hasTeam && parent.isPlatformOwner && (
           <Link

@@ -44,6 +44,11 @@ export async function middleware(request: NextRequest) {
     .eq("slug", teamSlug)
     .maybeSingle();
 
+  // Dono da plataforma: a conta passa automaticamente para a equipa que está a abrir.
+  if (user && team) {
+    await supabase.rpc("switch_owner_team", { p_slug: teamSlug });
+  }
+
   if (team?.platform_status === "blocked") {
     let isOwner = false;
     if (user) {

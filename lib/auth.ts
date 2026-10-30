@@ -43,6 +43,7 @@ export async function getCurrentParent(): Promise<
     .from("fantasy_teams")
     .select("id, name, formation")
     .eq("parent_id", user.id)
+    .eq("season_id", parent.season_id)
     .maybeSingle();
 
   if (!team) return "onboarding";
