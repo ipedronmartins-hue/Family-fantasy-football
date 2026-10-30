@@ -26,12 +26,14 @@ function mapRow(row: PlayerRow): Player {
   };
 }
 
-export async function getRoster(seasonId: string): Promise<Player[]> {
-  const { data, error } = await supabase
+export async function getRoster(seasonId: string, includeInactive = false): Promise<Player[]> {
+  let query = supabase
     .from("players")
     .select("id, external_id, name, shirt_number, position_group, position_label, traits, rating, set_pieces")
     .eq("season_id", seasonId)
     .order("shirt_number");
+  if (!includeInactive) query = query.eq("active", true);
+  const { data, error } = await query;
 
   if (error) throw new Error(`Failed to load roster: ${error.message}`);
   return (data as PlayerRow[]).map(mapRow);

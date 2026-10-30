@@ -33,7 +33,7 @@ export default async function MatchSummaryPage({
       .eq("season_id", team.seasonId)
       .eq("matchday", matchday)
       .maybeSingle(),
-    getRoster(team.seasonId),
+    getRoster(team.seasonId, true),
   ]);
 
   if (!match) notFound();

@@ -36,6 +36,16 @@ export function OnboardingForm({
       return;
     }
 
+    const { data: taken } = await supabase.rpc("parent_name_taken", {
+      p_season: seasonId,
+      p_name: displayName,
+    });
+    if (taken) {
+      setError("Já existe um pai com esse nome. Acrescenta o apelido ou o filho (ex: Ana – mãe do Vasco).");
+      setSaving(false);
+      return;
+    }
+
     const { error: parentError } = await supabase.from("parents").insert({
       id: user.id,
       season_id: seasonId,

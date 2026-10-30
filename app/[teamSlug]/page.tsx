@@ -196,6 +196,11 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
         </Link>
 
         {hasTeam && (
+          <Link href={`${base}/perfil`} className="mt-2 block text-center text-xs font-semibold text-blue">
+            ✏️ Alterar o meu nome
+          </Link>
+        )}
+        {hasTeam && (
           <p className="mb-4 mt-2 text-center text-xs text-ink/60">
             Contributo deste mês: {quotaPaid ? "registado ✅" : "ainda não registado"}
           </p>
