@@ -10,6 +10,7 @@ export interface ClubEntry {
 
 export const FORMACAO_CLUBS: ClubEntry[] = [
   { club: "Gondomar SC", team: "Sub-13", slug: "gondomar" },
+  { club: "Gondomar SC", team: "Sub-10", slug: "gondomar-sub-10" },
   { club: "FC Infesta", team: "Sub-13", slug: "fc-infesta-sub-13" },
 ];
 
