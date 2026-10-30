@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { getTeamBySlug } from "@/lib/team";
 
@@ -17,6 +18,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 export default async function FundoPage({ params }: { params: Promise<{ teamSlug: string }> }) {
   const { teamSlug } = await params;
   const team = await getTeamBySlug(teamSlug);
+  if (!team.moneyEnabled) redirect(`/${teamSlug}`);
 
   const [{ data }, { data: payments }] = await Promise.all([
     supabase

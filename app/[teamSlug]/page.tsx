@@ -212,12 +212,12 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
             ✏️ Alterar o meu nome
           </Link>
         )}
-        {hasTeam && (
+        {hasTeam && team.moneyEnabled && (
           <p className="mb-4 mt-2 text-center text-xs text-ink/60">
             Contributo deste mês: {quotaPaid ? "registado ✅" : "ainda não registado"}
           </p>
         )}
-        {!hasTeam && <div className="mb-4" />}
+        {(!hasTeam || !team.moneyEnabled) && <div className="mb-4" />}
 
         {voteMatch && (
           <div className="mb-8">
@@ -268,6 +268,7 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
           </Link>
         </div>
 
+        {team.moneyEnabled && (
         <div className="mb-8 rounded-2xl border border-line bg-white p-4">
           <p className="text-xs font-semibold text-blue">💙 PARA ONDE VAI O TEU CONTRIBUTO?</p>
           <p className="mt-1 text-xs text-ink/60">3 a 5 €/mês por família</p>
@@ -280,6 +281,7 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
             Ver Fundo da Equipa →
           </Link>
         </div>
+        )}
 
         <ScrollReveal>
           <section id="como-funciona" className="mb-8 scroll-mt-6">
@@ -298,6 +300,7 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
           </section>
         </ScrollReveal>
 
+        {team.moneyEnabled && (
         <ScrollReveal>
           <section className="mb-8">
             <h2 className="mb-2 font-display text-xl font-semibold text-ink">
@@ -326,6 +329,7 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
             </Link>
           </section>
         </ScrollReveal>
+        )}
 
         <ScrollReveal>
           <section className="mb-8 rounded-2xl bg-blue p-5 text-white">
@@ -360,9 +364,11 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
           <Link href={`${base}/plantel`} className="rounded-xl border border-line bg-white py-3">
             Plantel
           </Link>
-          <Link href={`${base}/fundo`} className="rounded-xl border border-line bg-white py-3">
-            Fundo
-          </Link>
+          {team.moneyEnabled && (
+            <Link href={`${base}/fundo`} className="rounded-xl border border-line bg-white py-3">
+              Fundo
+            </Link>
+          )}
           {hasTeam && parent.isAdmin && (
             <Link href={`${base}/admin`} className="rounded-xl border border-gold bg-gold/10 py-3 text-ink">
               Admin

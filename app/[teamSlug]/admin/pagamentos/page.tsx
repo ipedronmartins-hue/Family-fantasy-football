@@ -19,6 +19,7 @@ export default async function AdminPaymentsPage({ params }: { params: Promise<{ 
   if (!parent.isAdmin) redirect(base);
 
   const team = await getTeamBySlug(teamSlug);
+  if (!team.moneyEnabled) redirect(base);
   const monthStart = new Date();
   monthStart.setDate(1);
   const monthKey = monthStart.toISOString().slice(0, 10);

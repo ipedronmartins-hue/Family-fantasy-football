@@ -105,13 +105,16 @@ export default async function AdminPage({ params }: { params: Promise<{ teamSlug
           📋 Importar plantel e calendário de uma vez →
         </Link>
 
+        {team.moneyEnabled && (
         <Link
           href={`${base}/admin/patrocinio`}
           className="mb-4 block rounded-2xl border border-gold bg-gold/10 p-4 text-center text-sm font-semibold text-ink"
         >
           🤝 Patrocinador da equipa →
         </Link>
+        )}
 
+        {team.moneyEnabled && (
         <div className="mb-4 grid grid-cols-2 gap-2">
           <Link
             href={`${base}/admin/pagamentos`}
@@ -121,6 +124,7 @@ export default async function AdminPage({ params }: { params: Promise<{ teamSlug
           </Link>
           <FixedCostButton seasonId={team.seasonId} />
         </div>
+        )}
 
         <Link
           href={`${base}/admin/pontuacao`}

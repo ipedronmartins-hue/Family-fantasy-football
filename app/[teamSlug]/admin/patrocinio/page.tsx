@@ -16,6 +16,7 @@ export default async function PatrocinioPage({ params }: { params: Promise<{ tea
   if (!parent.isAdmin) redirect(base);
 
   const team = await getTeamBySlug(teamSlug);
+  if (!team.moneyEnabled) redirect(base);
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col pb-20">

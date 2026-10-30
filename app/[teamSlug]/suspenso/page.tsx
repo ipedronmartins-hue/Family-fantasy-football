@@ -11,8 +11,7 @@ export default async function SuspensoPage({ params }: { params: Promise<{ teamS
       <span className="text-4xl">🔒</span>
       <h1 className="mt-4 font-display text-2xl font-semibold text-ink">Acesso suspenso</h1>
       <p className="mt-2 text-sm text-ink/60">
-        O administrador de {team.clubName} {team.teamName} suspendeu o teu acesso, normalmente
-        por falta de contributo mensal. Fala com o administrador da equipa para resolver.
+        O administrador de {team.clubName} {team.teamName} suspendeu o teu acesso.{team.moneyEnabled ? " Normalmente por falta de contributo mensal." : ""} Fala com o administrador da equipa para resolver.
       </p>
     </div>
   );

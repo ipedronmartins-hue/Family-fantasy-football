@@ -12,13 +12,15 @@ export interface TeamContext {
   platformStatus: "active" | "blocked";
   format: TeamFormat;
   sponsorName: string | null;
+  /** false = equipa sem contributos/fundo/despesas (só o jogo). */
+  moneyEnabled: boolean;
 }
 
 /** Looks up a team by its URL slug. Calls notFound() if it doesn't exist. */
 export async function getTeamBySlug(slug: string): Promise<TeamContext> {
   const { data, error } = await supabase
     .from("teams")
-    .select("id, name, slug, platform_status, format, sponsor_name, clubs(name), seasons(id, label)")
+    .select("id, name, slug, platform_status, format, sponsor_name, money_enabled, clubs(name), seasons(id, label)")
     .eq("slug", slug)
     .maybeSingle();
 
@@ -38,5 +40,6 @@ export async function getTeamBySlug(slug: string): Promise<TeamContext> {
     platformStatus: data.platform_status as "active" | "blocked",
     format: data.format as TeamFormat,
     sponsorName: (data.sponsor_name as string | null) ?? null,
+    moneyEnabled: (data.money_enabled as boolean | null) ?? true,
   };
 }

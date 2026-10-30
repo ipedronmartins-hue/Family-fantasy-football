@@ -41,7 +41,7 @@ export default async function AdminParentsPage({ params }: { params: Promise<{ t
         <p className="text-sm text-white/70">Admin · {team.teamName}</p>
         <h1 className="mt-1 font-display text-3xl font-semibold">Pais</h1>
         <p className="mt-2 text-sm text-white/80">
-          Aprova quem se acabou de registar, e suspende quem não tiver o contributo em dia.
+          {team.moneyEnabled ? "Aprova quem se acabou de registar, e suspende quem não tiver o contributo em dia." : "Aprova quem se acabou de registar."}
         </p>
       </header>
 
