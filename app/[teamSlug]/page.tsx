@@ -337,8 +337,10 @@ export default async function InicioPage({ params }: { params: Promise<{ teamSlu
             <p className="mt-2 text-sm text-white/80">
               Os miúdos têm o campeonato deles. Nós temos o nosso. Vamos escolher, prever,
               acertar, falhar, ganhar pontos e tentar chegar ao topo. No final, haverá um
-              campeão. Mas o verdadeiro objetivo é outro: que todos contribuamos para tornar
-              esta época ainda melhor para os nossos miúdos.
+              campeão.{" "}
+              {team.moneyEnabled
+                ? "Mas o verdadeiro objetivo é outro: que todos contribuamos para tornar esta época ainda melhor para os nossos miúdos."
+                : "Os miúdos jogam no campo, os pais jogam aqui. É só por diversão!"}
             </p>
             <p className="mt-3 font-display text-sm font-semibold">
               Estás pronto para ser o Mister da Bancada?
